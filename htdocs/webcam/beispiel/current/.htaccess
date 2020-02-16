@@ -1,0 +1,3 @@
+RewriteEngine Off
+ExpiresActive On
+ExpiresByType image/jpeg "access plus 10 minutes"

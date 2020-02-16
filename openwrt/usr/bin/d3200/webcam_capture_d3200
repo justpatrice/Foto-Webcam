@@ -1,0 +1,90 @@
+#!/bin/sh
+# ---------------------------------------------------
+# Foto-Webcam.eu
+# Capture image with EOS camera
+#
+# Flori Radlherr, www.radlherr.de
+# This is free software, see COPYING for details.
+# ---------------------------------------------------
+#
+. /etc/webcam.cfg
+#
+# Skript wird auch als hook fuer gphoto2 verwendet
+if [ -n "$ACTION" ]
+then
+  echo "Action: $ACTION"
+  if [ "$ACTION" = download ]
+  then
+    echo -n "Action: download ready ... "
+    sleep 2
+    # gphoto2 beenden, da wait-event sonst lange blockiert
+    killall gphoto2
+  fi
+  exit 0
+fi
+cd /tmp
+touch cap_lock
+now=$1
+
+# Prozedur: Ein Foto aufnehmen. 
+do_capture () {
+  rm -f *.jpg *.JPG 2>/dev/null
+
+  # Heizung aus, um genug Strom zu haben
+  webcam_heater tmpoff
+  
+  # switch RC2 to 0V to enable MANUAL focus on Nikon
+  usb4all c20
+
+  echo "$wc_name $now: Capture image..."
+  #gphoto2 --recurse --delete-all-files --no-keep --capture-image \
+  #       --capture-tethered=60s --hook-script=$0 |\
+  #       grep -v Property 2>&1
+  gphoto2 --recurse --delete-all-files --trigger-capture
+  
+  t=`date +%s`
+  let t=t+90
+  while [ $t -gt `date +%s` ]
+  do
+    sleep 5
+    gphoto2 --get-file 1 >/dev/null 2>/dev/null && break
+  done
+  ls -l *.JPG
+
+  # Heizung wieder auf vorherigen Stand
+  webcam_heater reset
+  
+  # switch RC2 to +5V to enable autofocus on Nikon
+  usb4all c21
+
+  mv *.JPG raw.jpg || return 1
+
+  echo "$wc_name $now: Upload image..."
+  echo "state=upload" | curl -s --form log=@- $wc_curlpar/log.php
+  curl -sw '\n%{time_total}s %{size_upload}Bytes %{speed_upload}Bytes/s\n' \
+     --limit-rate 100k \
+     --form upload=@raw.jpg --form now=$now $wc_curlpar/upload.php
+}
+
+mem=`awk '/MemFree/ { print $2 }' </proc/meminfo`
+up=`awk '{ print $1 }' </proc/uptime`
+echo "state=capture uptime=$up mem=$mem"|curl -s -F log=@- $wc_curlpar/log.php
+
+# Bild machen
+if ! do_capture
+then
+  # Wenns nix war, Kamera aus/einschalten
+  echo "$wc_name $now: ----- Power off camera -----"
+  usb4all coff
+  sleep 15
+  echo "$wc_name $now: ----- Power on camera -----"
+  usb4all con
+  sleep 15
+  # Wenns nochmal nix war, Rechner neu starten
+  if ! do_capture
+  then
+    echo "$wc_name $now: ----- Reboot host -----"
+    #/sbin/reboot
+  fi
+fi
+rm cap_lock

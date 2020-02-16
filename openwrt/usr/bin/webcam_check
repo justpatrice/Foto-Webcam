@@ -1,0 +1,16 @@
+#!/bin/sh
+# ---------------------------------------------------
+# Foto-Webcam.eu
+# Check if endless webcam command loop is still running
+#
+# Flori Radlherr, www.radlherr.de
+# This is free software, see COPYING for details.
+# ---------------------------------------------------
+#
+if ! ps | grep -v grep | grep -q webcam_wait
+then
+  /usr/bin/webcam_wait & 2>/dev/null >/dev/null </dev/null
+fi
+#
+# Upload weather data
+/usr/bin/webcam_wxdata

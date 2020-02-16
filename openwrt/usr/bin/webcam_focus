@@ -1,0 +1,12 @@
+#!/bin/sh
+# ---------------------------------------------------
+# Foto-Webcam.eu
+# Optain new focus position for camera
+#
+# Flori Radlherr, www.radlherr.de
+# This is free software, see COPYING for details.
+# ---------------------------------------------------
+#
+echo "Focus neu einstellen..." >&2
+gphoto2 --set-config autofocusdrive=1 --wait-event=5s 2>&1 |\
+        grep -v Property

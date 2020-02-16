@@ -1,0 +1,37 @@
+#!/bin/sh
+# ---------------------------------------------------
+# Foto-Webcam.eu
+# Accept webcam-commands from server
+# Loops forever and awaits commands 
+#
+# Flori Radlherr, www.radlherr.de
+# This is free software, see COPYING for details.
+# ---------------------------------------------------
+#
+. /etc/webcam.cfg
+#
+cd /tmp
+#
+while true
+do
+  if curl -s $wc_curlpar/command.php >cmd.txt
+  then
+    sig=`head -1 cmd.txt | tail -1`
+    serial=`head -2 cmd.txt | tail -1`
+    cmd=`head -3 cmd.txt | tail -1`
+    if [ "$sig" = "command" ]
+    then
+      ($cmd 2>&1) >log.tmp
+      curl -s --form log=@log.tmp --form serial=$serial $wc_curlpar/log.php
+    fi
+    sleep 5
+    #
+    # Watchdog-trigger: 
+    # Toggle heater after some time (i.e. WLAN LED)
+    # Do it only if above "curl" command was ok, ie. network is alive
+    webcam_heater toggle
+  else
+    sleep 20
+  fi
+done
+

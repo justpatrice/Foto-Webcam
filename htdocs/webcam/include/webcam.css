@@ -1,0 +1,370 @@
+/* --------------------------------------------------------------------------
+// Foto-Webcam.eu
+// Webcam-specific styles
+//
+// Flori Radlherr, http://www.radlherr.de
+// This is free software, see COPYING for details.
+// --------------------------------------------------------------------------
+*/
+
+.greyed {
+  color: #707070;
+}
+
+.wcnav td {
+  text-align: center;
+  padding: 0px;
+}
+.blk {
+  background-color: transparent !important;
+}
+img {
+  border: none;
+}
+
+#wcimgdiv {
+  margin-top: 5px;
+}
+
+.wcnavtab {
+  background-color: white;
+  width: 93%;
+  border-spacing: 0px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.wcclocktab {
+  background-color: white;
+  width: 45px;
+  border-spacing: 0px;
+  border-collapse:collapse;
+}
+
+.wcnavtabbot {
+  border-bottom: 1px solid #c0c0c0;
+}
+
+#wcarchright {
+  float: right;
+}
+
+.wctext {
+  font-family: arial,helvetica,sans-serif;
+  font-size: 14px;
+  background-color: white;
+}
+
+.wcclocktab tr {
+  height: 18px;
+}
+.wcclocktab td {
+  background: url(vert-verlauf.png) repeat-x;
+  text-align: center;
+  vertical-align: middle;
+  border-color: #c0c0c0;
+  padding: 0px;
+  cursor: pointer;
+  border: 1px solid #c0c0c0;
+}
+
+.wcnavtab tr {
+  height: 24px;
+}
+.wcnavtab td {
+  font-family: arial,helvetica,sans-serif;
+  font-size: 14px;
+  background: url(vert-verlauf.png) repeat-x;
+  text-align: center;
+  border-color: #c0c0c0;
+  padding: 0px;
+  padding-top: 1px;
+  cursor: pointer;
+  border: 1px solid #c0c0c0;
+}
+
+.wcnavtab td>img {
+  width: 16px;
+  height: 16px;
+  padding-top: 2px;
+}
+
+.wcnavtab td:hover, 
+.wcclocktab td:hover,
+.wcopttab td:hover,
+.wcbestof:hover,
+td.wcthumbnail:hover,
+div.wcthumbnail:hover {
+  background: #10b6fb;
+  color: #ffffff;
+}
+
+td.wcnavact,
+td.wcnavact:hover,
+td.wcoptact {
+  background: #808080 !important;
+  font-weight: bold;
+  color: #ffffff;
+}
+td.wcnavwe {
+  background: url(vert-verlauf-we.png) repeat-x;
+}
+
+td.greyed {
+  color: #b0b0b0;
+  cursor: default;
+}
+
+td.greyed:hover {
+  background: url(vert-verlauf.png) repeat-x !important;
+  color: #b0b0b0 !important;
+}
+
+td.wcnavlegend {
+  text-align: left;
+  padding-left: 5px;
+  background: url(vert-verlauf.png) repeat-x;
+  cursor: default;
+  color: #707070;
+}
+
+td.wcnavlegend:hover {
+  background: url(vert-verlauf.png) repeat-x !important;
+  color: #707070 !important;
+}
+
+img.wcimg {
+  display: none;
+}
+
+.wcimg {
+  position: absolute;
+  top: 95px;
+  left: 0px;
+  z-index: 2;
+}
+
+#wcoverlay {
+  z-index: 10;
+  opacity: 0.7;
+  -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=70)";
+  background: url(trans.png);
+}
+
+.wclabel {
+  display: none;
+  position: absolute;
+  color: black;
+  padding-left: 2px;
+  padding-right: 2px;
+  font-size: 11px;
+  cursor: default;
+}
+.wclabel-0 {
+  background: bottom left no-repeat url(bubble-0.png);
+  padding-bottom: 12px;
+}
+.wclabel-1 {
+  background: bottom right no-repeat url(bubble-1.png);
+  padding-bottom: 12px;
+}
+.wclabel-2 {
+  background: top left no-repeat url(bubble-2.png);
+  padding-top: 12px;
+}
+.wclabel-3 {
+  background: top right no-repeat url(bubble-3.png);
+  padding-top: 12px;
+}
+.wclabel a {
+  color: black;
+  text-decoration: underline;
+}
+
+.wcthumbnail {
+  background: url(vert-verlauf.png) repeat-x;
+  padding-bottom: 2px;
+  text-align: center;
+  cursor: pointer;
+}
+.wcthumbspacer {
+  min-width: 3px;
+  width: 20px;
+  height: 10px;
+}
+
+.wcmessage { 
+  border: #b0b0b0 1px solid; 
+  padding-top: 5px;
+  padding-bottom: 5px;
+  margin-top: 20px;
+  margin-bottom: 10px; 
+  text-align: center;
+  background-color: #f0f0f0;
+}
+.wchelp { 
+  padding: 5px;
+  padding-top: 15px;
+}
+.wchelp h4 {
+  margin: 0px;
+}
+.wchelp ul {
+  margin: 0px;
+  margin-left: 20px;
+  margin-bottom: 10px;
+  padding: 0px;
+}
+.wchelp ul>li {
+  margin-top: 10px;
+}
+.wchelptab {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  border-spacing: 0px;
+}
+.wchelptab td {
+  padding-top: 5px;
+  padding-bottom: 5px;
+  vertical-align: top;
+}
+.wchelptab td>img {
+  width: 16px;
+  height: 16px;
+  padding: 2px;
+  margin: 2px;
+  margin-right: 10px;
+  border: 1px #b0b0b0 solid;
+}
+a.wcminilink {
+  max-height: 101px;
+  overflow: hidden;
+  color: black;
+  text-decoration: none;
+  margin-top: 15px;
+}
+.wcminilink {
+  display: inline-block;
+  width: 180px;
+}
+img.wcminiimg {
+  width: 180px;
+  height: 101px;
+}
+
+.wcopttab {
+  background-color: white;
+  margin-top: 20px;
+  width: 100%;
+  border-spacing: 0px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.wcopttab tr {
+  height: 24px;
+}
+.wcopttab td {
+  font-family: arial,helvetica,sans-serif;
+  font-size: 14px;
+  background: url(vert-verlauf.png) repeat-x;
+  text-align: center;
+  padding: 0px;
+  padding-top: 1px;
+  cursor: pointer;
+  border: 1px solid #c0c0c0;
+}
+.wcopttab td>img {
+  padding-top: 1px;
+}
+#wcinfo-webcams {
+  display: block;
+  text-align: justify;
+  padding-left: 18px;
+  padding-right: 18px;
+  border-left: 1px solid #c0c0c0;
+  border-right: 1px solid #c0c0c0;
+  border-bottom: 1px solid #c0c0c0;
+}
+.wcvgrad {
+  border-left: #b0b0b0 1px solid; 
+  border-bottom: #b0b0b0 1px solid; 
+  border-right: #b0b0b0 1px solid; 
+  background: #f0f0f0;
+  background: -moz-linear-gradient(top, #f0f0f0, #ffffff);
+  background: -webkit-gradient(linear, left top, left bottom, from(#f0f0f0), to(#ffffff));
+  -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#f0f0f0, endColorstr=#ffffff)";
+}
+#wcinfo-help {
+  display: none;
+}
+#wcinfo-exif {
+  display: none;
+  padding: 5px;
+}
+#wcinfo-exif td {
+  padding: 2px;
+  padding-right: 20px;
+}
+#wcinfo-infos {
+  display: none;
+  padding: 5px;
+  padding-top: 10px;
+}
+#wcinfo-bestof {
+  text-align: justify;
+  padding: 15px;
+}
+#wcinfo-settings {
+  padding: 10px;
+}
+#wcinfo-editlabels {
+  display: none;
+  padding: 10px;
+}
+.wcbestof-norm {
+  background: url(vert-verlauf-we.png) repeat-x;
+}
+.wcbestof-hi {
+  background: #707070;
+  color: #ffffff;
+}
+.wcbestof {
+  display: inline-block;
+  cursor: pointer;
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+  text-align: center;
+  font-size: 12px;
+}
+#wcbestsw {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  display: block;
+  background: url(trans.png) repeat; /* Wegen MSIE notwendig */
+}
+
+#wcovthumb {
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  z-index: 5;
+  display: none;
+  position: absolute;
+  width: 114px;
+  height: 82px;
+  background: #c0c0c0;
+  -moz-box-shadow:    0px 0px 20px 5px #404040;
+  -webkit-box-shadow: 0px 0px 20px 5px #404040;
+  box-shadow:         0px 0px 20px 5px #404040;
+}
+#wcovthumb div {
+  background: #f0f0f0 url(vert-verlauf-we.png) repeat-x;
+  padding-top: 2px;
+  text-align: center;
+  height: 16px;
+}
+#wcovthumb img {
+  width: 114px;
+  height: 64px;
+}
+  

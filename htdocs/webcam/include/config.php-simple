@@ -1,0 +1,114 @@
+<?
+// --------------------------------------------------------------------------
+// Foto-Webcam.eu
+// Global configuration
+//
+// Flori Radlherr, http://www.radlherr.de
+// This is free software, see COPYING for details.
+// --------------------------------------------------------------------------
+
+// The website
+#$webcam['server']= "www.foto-webcam.eu";
+$webcam['uri']=    "/webcam";
+
+// Image upload
+$webcam['uploadkey']=   "replacethistoyourkey";
+$webcam['topOffset']=   200;
+$webcam['maxGamma']=    1.5;
+$webcam['maxIso']=      400;
+$webcam['maxExposure']= 0;
+
+// Standard image formats
+$webcam['aspectRatio']= 16/9;
+$webcam['mainWidth']=   816;
+$webcam['hdWidth']=     1200;
+$webcam['thumbWidth']=  114;
+$webcam['hugeWidth']=   4272;
+$webcam['hugeHeight']=  2848;
+
+// Additional formats stored in "current" folder
+$webcam['resolutions']= Array(150,180,240,320,400,640,720,816,1200,1600);
+
+// When to refresh a shown image
+$webcam['actMinute']=   2;
+
+// When to capture the image
+$webcam['captureInterval']= 600;
+$webcam['captureOffset']= 0;
+// Special capture times mmddHHMM (regexp format) -> New year firework
+$webcam['specialTimes']= "/(12312354|12312357|01010003|01010006)/";
+
+// This message is shown if no current image could be obtained
+$webcam['errorMsg']= 
+        "Wegen einer technischen Störung ist die Kamera derzeit offline";
+
+// List additional cameras on this site or cross-linked
+// each is: Array(Name, Current-Image-Url, Link-Url, Title)
+// Hint: for local cams, both Urls shall be null
+$webcam['overview']= Array(
+  Array("beispiel", null, null,
+        "Beispiel zum Test")
+);
+
+$webcam['extOverview']= Array(
+  Array("lienz", 
+        "http://www.foto-webcam.eu/webcam/lienz/current/", 
+        "http://www.foto-webcam.eu/webcam/lienz/",
+        "foto-webcam.eu: Lienz / Zettersfeld"),
+  Array("lorenzalm",
+        "http://www.panorama-blick.at/webcam/lorenzalm/current",
+        "http://www.panorama-blick.at/webcam/lorenzalm/",
+        "panorama-blick.at: Mörtschach im Mölltal / Kärnten"),
+);
+
+// ----------------------------------------------------------------------------
+// Generate HTML navigation header
+$webcam['navHeader']= function() {
+  global $webcam;
+  print "<!DOCTYPE html>
+  <html><head>
+  <title>${webcam['title']}</title>
+  <style>
+    body {
+      font-family: arial,helvetica,sans-serif;
+      font-size: 14px;
+    }
+    #short-title {
+      position: absolute;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      text-align: center;
+      top: 10px;
+      left: 10px;
+      width: 150px;
+      border: 1px solid #c0c0c0;
+    }
+    #left-box {
+      position: absolute;
+      padding-top: 20px;
+      padding-bottom: 20px;
+      top: 200px;
+      left: 10px;
+      width: 150px;
+      border: 1px solid #c0c0c0;
+    }
+    .right {
+      position: absolute;
+      top: 0px;
+      left: 180px;
+      width: 720px;
+      padding-top: 10px;
+    }
+  </style>
+  </head><body>
+    <div id='short-title'>${webcam['short']}</div>
+    <div id='left-box'></div>
+    <div class='right'>";
+};
+
+// ----------------------------------------------------------------------------
+// Generate page footer
+$webcam['navFooter']= function() {
+  print "</div></body></html>";
+}
+?>

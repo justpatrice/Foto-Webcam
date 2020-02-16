@@ -1,0 +1,36 @@
+#!/bin/sh
+# ---------------------------------------------------
+# Foto-Webcam.eu
+# Set ISO and exposure bias value on camera
+#
+# Flori Radlherr, www.radlherr.de
+# This is free software, see COPYING for details.
+# ---------------------------------------------------
+#
+iso=$1
+expcomp=$2
+
+if [ "$iso" != "0" ]
+then
+  setiso="--set-config-value iso=$iso"
+fi
+
+if [ "$expcomp" != "" ]
+then
+  case "$expcomp" in 
+    0) setexpcomp="--set-config-index exposurecompensation=14"
+    ;;
+    1) setexpcomp="--set-config-index exposurecompensation=17"
+    ;;
+    2) setexpcomp="--set-config-index exposurecompensation=20"
+    ;;
+    3) setexpcomp="--set-config-index exposurecompensation=23"
+    ;;
+    4) setexpcomp="--set-config-index exposurecompensation=26"
+    ;;
+    5) setexpcomp="--set-config-index exposurecompensation=29"
+    ;;
+  esac
+fi
+
+gphoto2 $setiso $setexpcomp

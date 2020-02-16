@@ -1,0 +1,10 @@
+Model|Canon EOS 1100D
+Exposure Time|25 sec.
+FNumber|f/3.5
+ISO|400
+Exposure Bias|1.0 eV
+Focal Length|22mm
+MeasuredEV|-7.0 eV
+Lens Name|EF-S18-55mm f/3.5-5.6
+Serial Number|YA0447229
+Luminance|26.7 %

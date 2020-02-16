@@ -1,0 +1,19 @@
+beispiel;15.04.12 09:30:47;1334475047.1392;info;0;state=processing imagesize=1462241
+beispiel;15.04.12 09:30:47;1334475047.3141;info;0;night= lat=47.764091 long=11.567995 sr=05:35:37 ss=20:51:31
+beispiel;15.04.12 09:30:47;1334475047.3148;info;0;model=Canon EOS 1100D iso=100 exptime=0.0 bias=0 lum=56.5
+beispiel;15.04.12 09:30:47;1334475047.3148;info;0;luminance=56.5 gamma=1 new_lum=56.5
+beispiel;15.04.12 09:30:51;1334475051.4749;info;0;state=ready elapsed=4341 ms.
+beispiel;15.04.12 09:32:12;1334475132.9994;idle;0;waiting for command...
+beispiel;15.04.12 09:34:18;1334475258.8595;idle;0;waiting for command...
+beispiel;15.04.12 09:36:24;1334475384.7232;idle;0;waiting for command...
+beispiel;15.04.12 09:38:30;1334475510.5955;idle;0;waiting for command...
+beispiel;15.04.12 09:40:03;1334475603.5216;response;0;state=capture
+beispiel;15.04.12 09:40:06;1334475606.4877;response;0;state=error error=reset-camera
+beispiel;15.04.12 09:40:27;1334475627.2444;response;0;state=capture
+beispiel;15.04.12 09:40:34;1334475634.4714;response;0;state=upload
+beispiel;15.04.12 09:40:37;1334475637.8358;idle;0;waiting for command...
+beispiel;15.04.12 09:40:46;1334475646.6195;info;0;state=processing imagesize=1463569
+beispiel;15.04.12 09:40:46;1334475646.7953;info;0;night= lat=47.764091 long=11.567995 sr=05:35:37 ss=20:51:31
+beispiel;15.04.12 09:40:46;1334475646.796;info;0;model=Canon EOS 1100D iso=100 exptime=0.0 bias=0 lum=57.2
+beispiel;15.04.12 09:40:46;1334475646.7961;info;0;luminance=57.2 gamma=1 new_lum=57.2
+beispiel;15.04.12 09:40:51;1334475651.2301;info;0;state=ready elapsed=4616 ms.

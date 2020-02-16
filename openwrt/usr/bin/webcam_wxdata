@@ -1,0 +1,50 @@
+#!/bin/sh
+# ---------------------------------------------------
+# Foto-Webcam.eu
+# Collect weather data
+#
+# Flori Radlherr, www.radlherr.de
+# This is free software, see COPYING for details.
+# ---------------------------------------------------
+#
+. /etc/webcam.cfg
+
+# ---------------------------------------------------
+# Try usb4all
+if [ -f /usr/bin/usb4all ]
+then
+  usb4all temp | curl --form typ=usb4all -s --form 'wx=<-' $wc_curlpar/wx.php
+  exit
+fi
+
+# ---------------------------------------------------
+# Try HB627 or HB628 device
+hbdef=""
+[ -c /dev/usb/acm/0 ] && hbdev="/dev/usb/acm/0"
+[ -c /dev/ttyACM0 ]   && hbdev="/dev/ttyACM0"
+if [ -n "$hbdev" ] && [ -f /usr/bin/hb627 ]
+then
+  hb627 $hbdev | curl --form typ=hb627 -s --form 'wx=<-' $wc_curlpar/wx.php
+  exit
+fi
+
+# ---------------------------------------------------
+# Try DS1820 device
+if [ -f /usr/bin/digitemp_DS9097 ]
+then
+  digitemp_DS9097 -q -t 0 -o "temp=%.2C\n" |\
+       curl --form typ=ds1820 -s --form 'wx=<-' $wc_curlpar/wx.php
+  exit
+fi
+
+# ---------------------------------------------------
+# Try WS2350 device
+if [ -f /usr/bin/fetch2300 ] && [ -f /etc/open2300.conf ]
+then
+  # Check if last instance is still running
+  if ps | grep -v grep | grep -q fetch2300
+  then
+    exit
+  fi
+  fetch2300 | curl --form typ=ws2350 -s --form 'wx=<-' $wc_curlpar/wx.php
+fi

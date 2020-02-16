@@ -1,0 +1,49 @@
+#!/bin/sh
+# --------------------------------------------------------------------------
+# Foto-Webcam.eu
+# Send capture-command to openwrt cam host
+#
+# This script is to be used as a cron job for capturing images.
+# Requires key-authenticated ssh-connection to the camera computer.
+#
+# If a second command line parameter is given, the log is written
+# to stdout rather than file
+#
+# Flori Radlherr, http://www.radlherr.de
+# This is free software, see COPYING for details.
+# --------------------------------------------------------------------------
+#
+wc=$1
+if [ -z "$wc" ]
+then
+  echo ""
+  echo "Usage: $0 <hostname> [ showlog ]"
+  echo ""
+  exit
+fi
+log="/tmp/log-$wc.txt"
+mom="`date +%Y%m%d_%H%M`"
+
+capture () {
+  echo "------------------------------------------------------------------"
+  echo "$wc - `date`"
+  if ! ssh $wc webcam_capture $mom $wc 2>&1
+  then
+    echo "$0: Cam did not capture, retry..."
+    sleep 60
+    if ! ssh $wc webcam_capture $mom $wc 2>&1
+    then
+      echo "$0: Capture failed, give up."
+    fi
+  fi
+  echo "$wc - `date`"
+  echo "------------------------------------------------------------------" 
+  echo ""
+}
+
+if [ -n "$2" ]
+then
+  capture
+else
+  capture 2>&1 >>$log
+fi

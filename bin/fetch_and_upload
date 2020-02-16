@@ -1,0 +1,59 @@
+#!/bin/bash
+# --------------------------------------------------------------------------
+# Foto-Webcam.eu
+# Download image from another server and upload to archive
+#
+# Can be used as a cron job.
+#
+# Flori Radlherr, http://www.radlherr.de
+# This is free software, see COPYING for details.
+# --------------------------------------------------------------------------
+
+# Image source (TODO: replace with your data source and destination!)
+imgname="stiealm2.jpg"
+url="http://www.jachenau.org/webcam/$imgname"
+camname="stie-alm"
+
+# Image destination (may also use localhost)
+wc_adr="https://www.foto-webcam.eu/webcam/include"
+wc_key="replacethistoyourkey"
+
+cd /tmp
+rm -f $imgname
+wget -q $url
+
+if [ ! -s $imgname ]
+then
+  echo "$camname: no image on server"
+  exit
+fi
+
+if diff -b $imgname $imgname.last 2>/dev/null
+then
+  echo "$camname: no change"
+  exit
+fi
+
+now=`date +%Y%m%d_%H`
+mom=`date --reference $imgname +%Y%m%d_%H`
+min=`date --reference $imgname +%M`
+
+# Ist der Zeitstempel des Bildes mindestens von derselben Stunde?
+if [ "$now" != "$mom" ]
+then
+  echo "$camname: image is obsolete"
+  exit
+fi
+
+# Nur volle 10min anzeigen
+let min=$min/10*10
+[ "$min" = "0" ] && min="00"
+mom="${mom}$min"
+
+# Upload and process...
+echo "$camname: $mom"
+curl -sk --form key=$wc_key --form upload=@$imgname \
+     --form wc=$camname --form now=$mom $wc_adr/upload.php
+
+rm -f $imgname.last
+mv $imgname $imgname.last

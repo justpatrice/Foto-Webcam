@@ -1,0 +1,17 @@
+#!/bin/sh
+# ---------------------------------------------------
+# Foto-Webcam.eu
+# Optain new focus position for camera
+#
+# Flori Radlherr, www.radlherr.de
+# This is free software, see COPYING for details.
+# ---------------------------------------------------
+#
+echo "Focus neu einstellen..." >&2
+
+# switch RC2 to +5V to enable autofocus on Nikon
+usb4all c21
+
+# Make a dummy photo
+gphoto2 --capture-image
+gphoto2 --recurse --delete-all-files

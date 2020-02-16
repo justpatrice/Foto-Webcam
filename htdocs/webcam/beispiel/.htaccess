@@ -1,0 +1,5 @@
+RewriteEngine On
+RewriteRule !\.jpg ../include/webcam.php
+ExpiresActive On
+ExpiresByType image/jpeg "access plus 10 weeks"
+ExpiresByType image/png "access plus 10 weeks"

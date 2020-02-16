@@ -1,0 +1,43 @@
+#!/bin/sh
+# ---------------------------------------------------
+# Foto-Webcam.eu
+# Switch state of heater
+#
+# Flori Radlherr, www.radlherr.de
+# This is free software, see COPYING for details.
+# ---------------------------------------------------
+#
+
+# Watchdog-trigger: Toggle heater (i.e. WLAN LED)
+if [ "$1" = "toggle" ]
+then
+  usb4all wd
+  exit
+fi
+#
+# Switch by hand: 0 or 1
+usb4all d | grep heater
+if [ "$1" = 0 ] || [ "$1" = off ]
+then
+  usb4all hoff
+  rm -f /etc/heater.on
+fi
+if [ "$1" = "1" ] || [ "$1" = on ]
+then
+  usb4all hon
+  touch /etc/heater.on
+fi
+if [ "$1" = "tmpoff" ]
+then
+  usb4all hoff
+fi
+if [ "$1" = "reset" ]
+then
+  if [ -f /etc/heater.on ]
+  then
+    usb4all hon
+  else
+    usb4all hoff
+  fi
+fi
+usb4all d | grep heater

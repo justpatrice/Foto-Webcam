@@ -1,0 +1,768 @@
+Only in foto-webcam-1.3: diff-1.2-1.3.txt
+diff -r foto-webcam-1.2/htdocs/webcam/beispiel/config.php foto-webcam-1.3/htdocs/webcam/beispiel/config.php
+15a16,44
+> 
+> 
+> //----------------------------------------------------------------------------
+> // Receive weather data from usb4all-module
+> $webcam['wxFunc']= function($values, &$fields, &$raw_fields, &$camtxt) {
+>   $rr= array();
+>   if (preg_match("/(temp\d)=([\d\.\-]+)/", $values[0], $rr)) {
+>     $fields['temp1']= $rr[2]-0.0;  // change correction value here!
+>     $raw_fields['temp1']= $values[0];
+>   }
+>   if (preg_match("/(temp\d)=([\d\.\-]+)/", $values[1], $rr)) {
+>     $fields['temp2']= $rr[2]-0.0;  // change correction value here!
+>     $raw_fields['temp2']= $values[1];
+>   }
+>   if (preg_match("/(temp\d)=([\d\.\-]+)/", $values[2], $rr)) {
+>     $fields['temp3']= $rr[2];
+>     $raw_fields['temp3']= $values[2];
+>   }
+>   if (preg_match("/(volt\d)=([\d\.\-]+)/", $values[3], $rr)) {
+>     $fields['volt']= $rr[2]*2;
+>     $raw_fields['volt']= $values[3];
+>   }
+>   $fields['temp']= min($fields['temp1'], $fields['temp2']);
+>   $raw_fields['temp']= $fields['temp1'].";".$fields['temp2'];
+>   if (isset($fields['temp1']) && isset($fields['temp2'])) {
+>     $camtxt= sprintf("%0.1f°C", $fields['temp']);
+>   }
+>   return true;
+> };
+Only in foto-webcam-1.3/htdocs/webcam/include: bubble-0.png
+Only in foto-webcam-1.3/htdocs/webcam/include: bubble-1.png
+Only in foto-webcam-1.3/htdocs/webcam/include: bubble-2.png
+Only in foto-webcam-1.3/htdocs/webcam/include: bubble-3.png
+diff -r foto-webcam-1.2/htdocs/webcam/include/command.php foto-webcam-1.3/htdocs/webcam/include/command.php
+16a17
+>   // Check command file created by other process
+28a30,53
+>   // Check if capture interval has expired, try capture
+>   if (isset($webcam['captureInterval']) && $webcam['captureInterval']>0) {
+>     $lastCapture= $webcam['workPath']."/tmp/lastCapture.txt";
+>     $now= time();
+>     // honour configured offset, shown time includes offset
+>     if (isset($webcam['captureOffset'])) {
+>       $now-= $webcam['captureOffset'];
+>     }
+>     $towait= ($now % $webcam['captureInterval']);
+>     // Conditions for capturing:
+>     // - time frame within 20sec after interval has come
+>     // - last capture trigger is longer than 60sec old
+>     if ($towait<55 && ($now-@filemtime($lastCapture))>120) {
+>       // remember this event by file timestamp
+>       touch($lastCapture, $now);
+>       // generate image stamp
+>       $stamp= strftime("%Y%m%d_%H%M", $now);
+>       // generate command for camera host
+>       $webcam['lastCommand']= $now;
+>       echo("command\n$now\nwebcam_capture $stamp\n");
+>       doLog("state=capture-command stamp=$stamp", "info");
+>       exit;
+>     }
+>   }
+diff -r foto-webcam-1.2/htdocs/webcam/include/common.php foto-webcam-1.3/htdocs/webcam/include/common.php
+75a76,89
+> // --------------------------------------------------------------------------
+> // Check if valid MySQL connection is configured and open it
+> // --------------------------------------------------------------------------
+> function openMysql() {
+>   global $webcam;
+>   if (isset($webcam['mysqlLogin'])) {
+>     if(mysql_connect($webcam['mysqlHost'], $webcam['mysqlLogin'], 
+>                                            $webcam['mysqlPassword'])) {
+>       return mysql_select_db($webcam['mysqlDatabase']);
+>     }
+>   }
+>   return false;
+> }
+> 
+diff -r foto-webcam-1.2/htdocs/webcam/include/config.php foto-webcam-1.3/htdocs/webcam/include/config.php
+34a35,38
+> // When to capture the image
+> $webcam['captureInterval']= 600;
+> $webcam['captureOffset']= 0;
+> 
+diff -r foto-webcam-1.2/htdocs/webcam/include/config.php-fotowebcam.eu foto-webcam-1.3/htdocs/webcam/include/config.php-fotowebcam.eu
+34a35,39
+> // When to capture the image
+> $webcam['captureInterval']= 600;
+> $webcam['captureOffset']= 0;
+> 
+> // This message is shown if no current image could be obtained
+41,48d45
+<   Array("norderney", null, null,
+<         "Norderney / Ostfriesland - Blick nach Nordwesten"),
+<   Array("uffing", null, null,
+<         "Uffing / Staffelsee - Blick nach Süden"),
+<   Array("wien", null, null,
+<         "Wien-Brigittenau - Blick von der UBIMET-Zentrale nach Südwesten"),
+<   Array("marquartstein", null, null,
+<         "Marquartstein-Süd - Blick nach Osten"),
+51,52c48,53
+<   Array("herzogstand", null, null,
+<         "Herzogstand/Fahrenbergkopf - Richtung Walchensee und Karwendel"),
+---
+>   Array("kronplatz", null, null,
+>         "Kronplatz - Bruneck / Pustertal - Blick nach Norden über das Tauferer Tal"),
+>   Array("bruneck", null, null,
+>         "Bruneck - Pustertal / Südtirol - Blick nach Südwesten"),
+>   Array("zellamsee", null, null,
+>         "Zell am See-Kaprun - Blick zum Kitzsteinhorn und zur Schmittenhöhe"),
+54a56,57
+>   Array("marquartstein", null, null,
+>         "Marquartstein-Süd - Blick nach Osten"),
+56a60,71
+>   Array("kochelsee", null, null,
+>         "Herzogstand/Fahrenbergkopf - Über den Kochelsee ins Oberland"),
+>   Array("herzogstand", null, null,
+>         "Herzogstand/Fahrenbergkopf - Richtung Walchensee und Karwendel"),
+> #  Array("uffing", null, null,
+> #        "Uffing / Staffelsee - Blick nach Süden"),
+>   Array("unterammergau", null, null,
+>         "Unterammergau - Blick nach Südosten zum Laber, Fricken und Kofel"),
+>   Array("tegelberg", null, null,
+>         "Tegelberghaus - Ostallgäu - Blick auf Füssen und den Forggensee"),
+>   Array("wien", null, null,
+>         "Wien-Brigittenau - Blick von der UBIMET-Zentrale nach Südwesten"),
+61,64c76,79
+<   Array("esg-muenchen", "http://www.esg.de/fr-webcam/current/", null,
+<         "ESG-Büro München zum Olympiagelände"),
+<   Array("kloster-ffb", "http://www.esg.de/klostercam/current/", null,
+<         "Kloster Fürstenfeld in Fürstenfeldbruck")
+---
+>   Array("grandsberg", null, null,
+>         "Grandsberg - Schwarzach / Bayerischer Wald - Blick nach Süden"),
+>   Array("norderney", null, null,
+>         "Norderney / Ostfriesland - Blick nach Nordwesten")
+68a84,92
+>         "http://www.addicted-sports.com/fileadmin/webcam/Gardasee/current", 
+>         "http://www.addicted-sports.com/windsurfen/webcamwetter/gardasee/",
+>         "www.addicted-sports.com: ".
+>         "Blick über den Gardasee"),
+>   Array("brauneck", 
+>         "http://178.210.110.5/webcam/webcam1/current",
+>         "http://178.210.110.5/webcam/webcam1/", 
+>         "Brauneck Bergstation Richtung Karwendelgebirge"),
+>   Array("walchensee", 
+79c103
+<         "/webcam/holzkirchen/current",
+---
+>         "http://www.foto-webcam.eu/gunnarcam/current",
+81c105,143
+<         "www.sircar.de: Blick nach Südosten bei Gunnar in Holzkirchen")
+---
+>         "www.sircar.de: Blick nach Südosten bei Gunnar in Holzkirchen"),
+>   Array("ammersee", 
+>         "http://www.addicted-sports.com/fileadmin/webcam/Ammersee/current", 
+>         "http://www.addicted-sports.com/windsurfen/webcamwetter/ammersee/",
+>         "www.addicted-sports.com: ".
+>         "Blick von Herrsching über den Ammersee"),
+>   Array("esg-muenchen", 
+>         "http://www.esg.de/fr-webcam/current/", 
+>         "/webcam/esg-muenchen/",
+>         "ESG-Büro München zum Olympiagelände"),
+>   Array("kloster-ffb", 
+>         "http://www.esg.de/klostercam/current/", 
+>         "/webcam/kloster-ffb/",
+>         "Kloster Fürstenfeld in Fürstenfeldbruck"),
+>   Array("stroheim", 
+>         "/webcam/tmp/stroheim/current",
+>         "http://webcam.wetterstation-stroheim.at/webcam1/", 
+>         "Wetterstation Stroheim in Oberösterreich"),
+>   Array("bergfest", 
+>         "http://www.asam-live.de/webcam/amberg1/current",
+>         "http://www.asam-live.de/webcam/amberg1/", 
+>         "ASAM-live.de: Mariahilfberg - Webcams in Amberg/Sulzbach und Umgebung"),
+>   Array("bergfest", 
+>         "http://www.asam-live.de/webcam/mariahilfberg1/current",
+>         "http://www.asam-live.de/webcam/mariahilfberg1/", 
+>         "ASAM-live.de: DL0AO nach Amberg - Webcams in Amberg/Sulzbach und Umgebung"),
+>   Array("maxhuette", 
+>         "http://www.asam-live.de/webcam/amberg33/current",
+>         "http://www.asam-live.de/webcam/amberg33/", 
+>         "ASAM-live.de: Maxhütte - Webcams in Amberg/Sulzbach und Umgebung"),
+>   Array("oberpfalzturm", 
+>         "http://www.asam-live.de/webcam/oberpfalzturm2/current",
+>         "http://www.asam-live.de/webcam/oberpfalzturm2/", 
+>         "ASAM-live.de: Oberpfalzturm - Webcams in Amberg/Sulzbach und Umgebung"),
+>   Array("bielefeld", 
+>         "/webcam/tmp/bielefeld/current",
+>         "http://hamnet-bielefeld.de/webcam/bielefeld/", 
+>         "hamnet-bielefeld.de - DB0BI: ".
+>         "Hünenburg / Teutoburger Wald nach Bielefeld")
+122,124c184,186
+< $webcam['mysqlLogin']=    "****";
+< $webcam['mysqlPassword']= "****";
+< $webcam['mysqlDatabase']= "****";
+---
+> $webcam['mysqlLogin']=    "x";
+> $webcam['mysqlPassword']= "x";
+> $webcam['mysqlDatabase']= "x";
+Only in foto-webcam-1.3/htdocs/webcam/include: extlink.png
+Only in foto-webcam-1.3/htdocs/webcam/include: faden.png
+diff -r foto-webcam-1.2/htdocs/webcam/include/imgutil.php foto-webcam-1.3/htdocs/webcam/include/imgutil.php
+115a116
+>   $al= 127;
+119a121
+>     $al= 126; // 127 leads to ugly effects :-(
+124c126
+<   imagefill($textImg, 0, 0, ImageColorAllocateAlpha($textImg, $s,$s,$s, 127));
+---
+>   imagefill($textImg, 0, 0, ImageColorAllocateAlpha($textImg, $s,$s,$s, $al));
+238c240
+<     if ($resX > 2000) $div= 14;
+---
+>     if ($resX > 2000) $div= 16;
+328c330
+<   if (time() > $ss) {
+---
+>   if (time() > ($ss-1800)) { # switch to night 1/2h before sunset
+338c340
+<     echoLog("night=$ret lat=$lat long=$long sr=$xsr ss=$xss", "info");
+---
+>     doLog("night=$ret lat=$lat long=$long sr=$xsr ss=$xss", "info");
+368c370
+<   echoLog("luminance=$lum gamma=$gamma new_lum=$newLum", "info");
+---
+>   doLog("luminance=$lum gamma=$gamma new_lum=$newLum", "info");
+387c389
+<   echoLog("model=$model iso=$iso exptime=$et bias=$bias lum=$lum", "info");
+---
+>   doLog("model=$model iso=$iso exptime=$et bias=$bias lum=$lum", "info");
+402c404
+<     if ($et>25 && $iso<$webcam['maxIso'] && $lum<25) {
+---
+>     if ($et>25 && $iso<$webcam['maxIso'] && $lum<35) {
+414a417,423
+>       # If image is extremely dark, enlight even more
+>       if ($lum<10 && $bias<$webcam['maxExposure']) {
+>         $shallExp= $shallExp+1;
+>         if ($et>25 && $shallIso<$webcam['maxIso']) {
+>           $shallIso= $iso*2;
+>         }
+>       }
+Only in foto-webcam-1.3/htdocs/webcam/include: infos.php
+Only in foto-webcam-1.3/htdocs/webcam/include: jquery.lazyload.min.js
+diff -r foto-webcam-1.2/htdocs/webcam/include/status.php foto-webcam-1.3/htdocs/webcam/include/status.php
+41c41
+<     width: 190px;
+---
+>     width: 200px;
+diff -r foto-webcam-1.2/htdocs/webcam/include/upload.php foto-webcam-1.3/htdocs/webcam/include/upload.php
+25,26c25,31
+<   echoLog("No time specified.", "error");
+<   exit;
+---
+>   // If no time is specified, use the current time
+>   $now_yh= "20";
+>   $now_yy= strftime("%y");
+>   $now_m=  strftime("%m");
+>   $now_d=  strftime("%d");
+>   $now_th= strftime("%H");
+>   $now_tm= strftime("%M");
+35c40
+< echoLog("state=processing imagesize=$size", "info");
+---
+> doLog("state=processing imagesize=$size", "info");
+93d97
+<   echoLog("Creating $fn", "debug");
+102d105
+<     echoLog("Creating $fn", "debug");
+113,114d115
+< echoLog("Creating ${target_file}sm/la/lm/hu", "debug");
+< 
+125,126d125
+< copy($webcam['workPath']."/current/$laSize.jpg", "${target_file}la.jpg");
+< copy($webcam['workPath']."/current/$lmSize.jpg", "${target_file}lm.jpg");
+130d128
+< echoLog("Creating $fn..", "debug");
+138d135
+< 
+140a138,141
+> // Be sure the main trigger for meta data is created at latest
+> copy($webcam['workPath']."/current/$lmSize.jpg", "${target_file}lm.jpg");
+> copy($webcam['workPath']."/current/$laSize.jpg", "${target_file}la.jpg");
+> 
+161c162
+< echoLog("state=ready elapsed={$elapsed} ms.", "info");
+---
+> doLog("state=ready elapsed={$elapsed} ms.", "info");
+diff -r foto-webcam-1.2/htdocs/webcam/include/webcam.css foto-webcam-1.3/htdocs/webcam/include/webcam.css
+63c63
+<   vertical-align: center;
+---
+>   vertical-align: middle;
+78d77
+<   vertical-align: center;
+88a88
+>   padding-top: 2px;
+145a146,182
+> #wcoverlay {
+>   z-index: 10;
+>   opacity: 0.7;
+>   -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=70)";
+>   background: url(trans.png);
+> }
+> 
+> .wclabel {
+>   display: none;
+>   position: absolute;
+>   color: black;
+>   padding-left: 2px;
+>   padding-right: 2px;
+>   font-size: 11px;
+>   cursor: default;
+> }
+> .wclabel-0 {
+>   background: bottom left no-repeat url(bubble-0.png);
+>   padding-bottom: 12px;
+> }
+> .wclabel-1 {
+>   background: bottom right no-repeat url(bubble-1.png);
+>   padding-bottom: 12px;
+> }
+> .wclabel-2 {
+>   background: top left no-repeat url(bubble-2.png);
+>   padding-top: 12px;
+> }
+> .wclabel-3 {
+>   background: top right no-repeat url(bubble-3.png);
+>   padding-top: 12px;
+> }
+> .wclabel a {
+>   color: black;
+>   text-decoration: underline;
+> }
+> 
+233d269
+<   vertical-align: center;
+238a275,277
+> .wcopttab td>img {
+>   padding-top: 1px;
+> }
+279a319,322
+> #wcinfo-editlabels {
+>   display: none;
+>   padding: 10px;
+> }
+diff -r foto-webcam-1.2/htdocs/webcam/include/webcam.js foto-webcam-1.3/htdocs/webcam/include/webcam.js
+14a15
+> webcam.def.videoOrder= 0;
+122c123,126
+<         $("#wcinfo-"+opt).load("?infos=1");
+---
+>         if (! webcam.infoPresent) {
+>           $("#wcinfo-"+opt).load(webcam.url+"?infos=1");
+>           webcam.infoPresent= true;
+>         }
+125c129,132
+<         $("#wcinfo-"+opt).load("?help=1");
+---
+>         if (! webcam.helpPresent) {
+>           $("#wcinfo-"+opt).load(webcam.url+"?help=1");
+>           webcam.helpPresent= true;
+>         }
+201a209
+>     webcam.data= data;
+205d212
+<       webcam.data= data;
+210a218,220
+>       if (webcam.videoOrder==0) {
+>         webcam.vidptr= webcam.vidarr.length-2;
+>       }
+215d224
+<       webcam.data= data;
+324c333
+<   if (webcam.data.hugeimg.length>0) {
+---
+>   if (webcam.data.hugeimg && webcam.data.hugeimg.length>0) {
+370c379
+<     if (webcam.vidptr >= webcam.vidarr.length) {
+---
+>     if (webcam.vidptr>=webcam.vidarr.length || webcam.vidptr<0) {
+378,379c387,388
+<         "<div style='background-color:#e0e0e0;border: #a0a0a0 1px solid;'>"+
+<         "<span style='"+
+---
+>         "<div style='background-color:#e0e0e0;border: #a0a0a0 1px solid;"+
+>         "font-size:0px;'><span style='"+
+383d391
+<       var img= $(webcam.layerId[webcam.layer]);
+385c393
+<       webcam.renderImage(webcam.vidarr[webcam.vidptr++]);
+---
+>       webcam.renderImage(webcam.vidarr[webcam.vidptr]);
+413c421
+<       webcam.markActive(webcam.vidarr[webcam.vidptr-1]);
+---
+>       webcam.markActive(webcam.vidarr[webcam.vidptr]);
+414a423,428
+>       if (webcam.videoOrder==0) {
+>         webcam.vidptr--;
+>       }
+>       else {
+>         webcam.vidptr++;
+>       }
+641c655
+<         ptr= webcam.vidptr-2+i;
+---
+>         ptr= webcam.vidptr-1+i;
+742a757
+>   var found= false;
+744,745c759,766
+<     ret=  "<table cellspacing=0 cellpadding=0 border=0 width='100%'>"+
+<           "<tr><td align='left'>";
+---
+>     for (var i=0; i<webcam.data.bestof.length; i++) {
+>       if (webcam.data.image.match(webcam.data.bestof[i])) {
+>         webcam.bestofIndex= i;
+>         found= true;
+>         break;
+>       }
+>     }
+>     ret=  "<div style='text-align:center;margin-bottom:10px'>";
+747a769,777
+>     ret+= " &nbsp; ";
+> 
+>     if (found) {
+>       ret+= "Bild "+(webcam.bestofIndex+1)+" von "+
+>                     webcam.data.bestof.length+" - ";
+>     }
+>     else {
+>       ret+= webcam.data.bestof.length+" Bilder - ";
+>     }
+749d778
+<     ret+= "</td><td align='center'>";
+754c783
+<         "loading-16.gif'> Diashow beenden</a></td>";
+---
+>         "loading-16.gif'> Diashow beenden</a>";
+759c788
+<         "Diashow starten</a></td>";
+---
+>         "Diashow starten</a>";
+761c790
+<     ret+= "<td align='right'>";
+---
+>     ret+= " &nbsp; ";
+765c794
+<     ret+= "</td></tr></table><div style='height:10px'></div>";
+---
+>     ret+= "</div>";
+777c806
+<       if (webcam.data.image.match(go)) {
+---
+>       if (found && i == webcam.bestofIndex) {
+779d807
+<         webcam.bestofIndex= i;
+781c809,814
+<       ret+= "<div class='wcbestof "+cl+"' "+
+---
+>       var lazy= "";
+>       if (i>17) {
+>         // Do lazy-loading for the lines more below
+>         lazy= webcam.inc+"trans.png' data-original='";
+>       }
+>       ret+= "<span class='wcbestof "+cl+"' "+
+783,784c816,817
+<             "<br><img src='"+webcam.url+go+"_sm.jpg' width='"+
+<             webcam.thumbWidth+"' height='"+webcam.thumbHeight+"'></div> ";
+---
+>             "<br><img src='"+lazy+webcam.url+go+"_sm.jpg' width='"+
+>             webcam.thumbWidth+"' height='"+webcam.thumbHeight+"'></span> ";
+787,788c820,821
+<       ret+= "<div style='display:inline-block;width:"+
+<             webcam.thumbWidth+"px;height:1px;padding:0px;'></div> ";
+---
+>       ret+= "<span style='display:inline-block;width:"+
+>             webcam.thumbWidth+"px;height:1px;padding:0px;'></span> ";
+791a825
+>   $(".wcbestof>img").lazyload();
+845a880
+>   webcam.videoOrder=  webcam.def.videoOrder;
+882a918
+>                 "videoOrder:"+webcam.videoOrder+","+
+950a987,992
+>   ret+= "<tr><td>Abspielrichtung der Video-Sequenz:</td><td>";
+>   ret+= webcam.comboBoxText("videoOrder", 
+>                         new Array("Umgekehrt", "Chronologisch"),
+>                         webcam.videoOrder, webcam.def.videoOrder);
+>   ret+= "</td></tr>";
+> 
+1017c1059
+<     box+= webcam.boxadd;
+---
+>     box+= "<div style='margin-top:8px;'></div>"+webcam.boxadd;
+1112a1155
+>   return false;
+1143,1145c1186,1190
+<         src= src.replace(/\?.*$/, "");
+<         src+= "?"+new Date().getTime();
+<         $(this).attr("src", src);
+---
+>         if (! src.match(/trans.png/)) {
+>           src= src.replace(/\?.*$/, "");
+>           src+= "?"+new Date().getTime();
+>           $(this).attr("src", src);
+>         }
+1174a1220,1283
+> // Care about the overlay div which is on top of the image
+> webcam.renderLabels= function() {
+>   var ov= $("#wcoverlay");
+>   if (webcam.data.labels && 
+>      (webcam.actopt=="infos" || webcam.actopt=="editlabels")) {
+> 
+>     var ovcontent= "";
+>     var xmax= ov.width();
+>     var ymax= ov.height();
+> 
+>     for (i= 0; i<webcam.data.labels.length; i++) {
+>       var o= webcam.data.labels[i];
+>       var x= (o.x*xmax)/100;
+>       var y= ymax-(o.y*ymax)/100;
+>       var txt= o.txt;
+> 
+>       if (o.href && o.href!="" && webcam.actopt!="editlabels") {
+>         txt= "<a href='"+o.href+"'><img src='"+webcam.inc+
+>         "extlink.png' align='top'> "+txt+"</a>";
+>       }
+>       ovcontent+= "<span id='lab_"+o.id+"' style='bottom:"+y+"px;";
+>       if (webcam.selectedLabel == o.id) {
+>         ovcontent+= "margin:-2px;border: 2px solid red;";
+>       }
+>       if (xmax-x < 500) {
+>         ovcontent+=  "right:"+(xmax-x-5)+
+>           "px;' class='wclabel wclabel-1'>"+txt+"</span>";
+>       }
+>       else {
+>         ovcontent+= "left:"+(x-5)+
+>           "px;' class='wclabel wclabel-0'>"+txt+"</span>";
+>       }
+>     }
+>     ov.html(ovcontent);
+>     ov.css("cursor", "default");
+>     ov.attr("title", "");
+>     ov.unbind("click");
+>     if (webcam.labelsVisible) {
+>       $(".wclabel").show();
+>     }
+>     else {
+>       $(".wclabel").fadeIn(1000);
+>       webcam.labelsVisible= true;
+>     }
+>   }
+>   else {
+>     $(".wclabel").fadeOut(1000, function() {
+>       ov.html("");
+>       webcam.labelsVisible= false;
+>     });
+>     if (webcam.data.hugeimg && webcam.data.hugeimg.length>0) {
+>       ov.css("cursor", "pointer");
+>       ov.attr("title", "Klick zum Anzeigen des Bildes in voller Größe ("+
+>               webcam.hugeWidth+"x"+webcam.hugeHeight+" Pixel)");
+>       ov.bind("click", webcam.openHugeImage);
+>     }
+>     else {
+>       ov.css("cursor", "default");
+>       ov.attr("title", "Bild hat bereits maximale Größe");
+>       ov.unbind("click");
+>     }
+>   }
+> }
+> // ****************************************************************************
+1180a1290,1294
+>   // maybe an external requirement forces fix size
+>   if (webcam.forceSize && webcam.forceSize>0) {
+>     webcam.imgSize= webcam.forceSize;
+>   }
+> 
+1206a1321,1322
+>     $("#wcoverlay").css("height",webcam.actHeight+"px");
+>     $("#wcoverlay").css("width",webcam.actWidth+"px");
+1209d1324
+<     setSizes(false);
+1212a1328,1330
+>     if (setSizes !== undefined) {
+>       setSizes();
+>     }
+1219a1338,1341
+>   var vr= "";
+>   if (webcam.videoOrder==0) {
+>     vr= "rückwärts ";
+>   }
+1258c1380
+<         "abspielen' onclick='webcam.playVideo(0)'>"+
+---
+>         vr+"abspielen' onclick='webcam.playVideo(0)'>"+
+1261c1383
+<         "Uhrzeit abspielen' onclick='webcam.playVideo(1)'>"+
+---
+>         "Uhrzeit "+vr+"abspielen' onclick='webcam.playVideo(1)'>"+
+1333a1456,1458
+>     "<div id='wcoverlay' class='wcimg' style='display:none' "+
+>                "style='height:"+webcam.actHeight+"px;"+
+>                       "width:"+webcam.actWidth+"px;'></div>"+
+diff -r foto-webcam-1.2/htdocs/webcam/include/webcam.php foto-webcam-1.3/htdocs/webcam/include/webcam.php
+15a16
+> $webcamForceSize= 0;
+33a35
+>   $num= 0;
+40a43,49
+>       // If hosted locally and older than 5h, do not list
+>       if ($current[0]=='/') {
+>         $img= $_SERVER['DOCUMENT_ROOT']."$current/400.jpg";
+>         if (filemtime($img)<time()-18000){
+>           continue;
+>         }
+>       }
+45a55,61
+>     $lazy1= "";
+>     $lazy2= "";
+>     if ($num>=11) {
+>       $lazy1= "<img src='$webcamInclude/trans.png' style='display:none' ".
+>               "data-original='$current/180.jpg' class='wcminicont'><noscript>";
+>       $lazy2= "</noscript>";
+>     }
+47c63,64
+<        "<img src='$current/180.jpg' class='wcminiimg'></a>\n";
+---
+>       "$lazy1<img src='$current/180.jpg' class='wcminiimg'>$lazy2</a>\n";
+>     $num++;
+50,55c67,72
+<     <div class="wcminilink"></div>
+<     <div class="wcminilink"></div>
+<     <div class="wcminilink"></div>
+<     <div class="wcminilink"></div>
+<     <div class="wcminilink"></div>
+<     <div class="wcminilink"></div>
+---
+>     <span class="wcminilink"></span>
+>     <span class="wcminilink"></span>
+>     <span class="wcminilink"></span>
+>     <span class="wcminilink"></span>
+>     <span class="wcminilink"></span>
+>     <span class="wcminilink"></span>
+61c78,80
+<     "<br>Foto-Webcams von anderen Betreibern mit ähnlicher Technik:<br>";
+---
+>     "<div class='menu menu-norm'>".
+>     "Foto-Webcams von anderen Betreibern mit ähnlicher Technik:".
+>     "</div>";
+66a86,89
+>     $style= "";
+>     if (isset($cam[4])) {
+>       $style= $cam[4];
+>     }
+67a91,94
+>     $target= "";
+>     if (preg_match("/^http/", $link)) {
+>       $target= "target='_blank'";
+>     }
+69,70c96,100
+<       "<a class='wcminilink' target='_blank' href='$link' title='$title'>".
+<       "<img src='$current/180.jpg' class='wcminiimg'></a>\n";
+---
+>       "<a class='wcminilink' $target href='$link' title='$title'>".
+>       "<img src='$webcamInclude/trans.png' style='display:none' ".
+>       "data-original='$current/180.jpg' class='wcminicont'>".
+>       "<noscript><img src='$current/180.jpg' class='wcminimg'></noscript>".
+>       "</a>\n";
+73,78c103,108
+<     <div class="wcminilink"></div>
+<     <div class="wcminilink"></div>
+<     <div class="wcminilink"></div>
+<     <div class="wcminilink"></div>
+<     <div class="wcminilink"></div>
+<     <div class="wcminilink"></div>
+---
+>     <span class="wcminilink"></span>
+>     <span class="wcminilink"></span>
+>     <span class="wcminilink"></span>
+>     <span class="wcminilink"></span>
+>     <span class="wcminilink"></span>
+>     <span class="wcminilink"></span>
+98a129,131
+> <div id="wcinfo-editlabels" class="wcvgrad wctext" style="display:none">
+>   <img src="$webcamInclude/loading.gif">
+> </div>
+123a157
+> 
+206a241,250
+> // Embedding as frame-content is only allowed for listed (or empty) referers
+> $doFrame= 0;
+> if (isset($webcam["frameOk"])) {
+>   $ok= $webcam["frameOk"];
+>   $ref= $_SERVER['HTTP_REFERER'];
+>   if (strlen($ref)<5 || preg_match("/$ok/", $ref)) {
+>     $doFrame= isset($_GET["frame"]);
+>   }
+> }
+> 
+217c261
+< if ($currentUri != $webcamWorkuri) {
+---
+> if ($currentUri != $webcamWorkuri && !$doFrame) {
+238c282
+<   $errorBox= "<div class='wcmessage' 
+---
+>   $errorBox= "<div class='wcmessage wcwidth' 
+244c288,303
+< $webcam['navHeader']();
+---
+> if ($doFrame) {
+>   print "<!DOCTYPE html>
+>     <html><head><title>$webcamTitle</title></head>
+>     <body style='margin:0;'>
+>     <style>.wcimg { top:88px !important; }</style>
+>     <script>
+>     if(top.frames.length==0) {
+>       top.location.href= self.location.href.replace('/\?frame.*/','');
+>     }
+>     </script>";
+>   $webcam['navHasjQuery']= null;
+>   $webcamForceSize= $_GET["frame"]+0;
+> }
+> else {
+>   $webcam['navHeader']();
+> }
+251a311,316
+> $jQuery.= "<script language='JavaScript' ".
+>           "src='$webcamInclude/jquery.lazyload.min.js'></script>";
+> // If an absolute path is given by configuration, use it for noscript area
+> if ($webcamUrl) {
+>   $webcamWorkuri= preg_replace("/\/$/", "", $webcamUrl);
+> }
+280a346
+>   webcam.forceSize= $webcamForceSize;
+297a364,372
+>   <script>
+>   jQuery(document).ready(function() {
+>     jQuery(".wcminicont").addClass("wcminiimg");
+>     jQuery(".wcminicont").show();
+>     setTimeout(function() {
+>       jQuery(".wcminicont").lazyload();
+>     }, 300);
+>   });
+>   </script>
+300c375,380
+< $webcam['navFooter']();
+---
+> if ($doFrame) {
+>   print "</body></html>";
+> }
+> else {
+>   $webcam['navFooter']();
+> }
+diff -r foto-webcam-1.2/htdocs/webcam/include/wx.php foto-webcam-1.3/htdocs/webcam/include/wx.php
+84c84
+< if (count($fields)>0) {
+---
+> if (count($fields)>0 && openMysql()) {
+87,91d86
+<   // Open MySQL
+<   mysql_connect($webcam['mysqlHost'], $webcam['mysqlLogin'], 
+<                 $webcam['mysqlPassword']);
+<   mysql_select_db($webcam['mysqlDatabase']);
+< 

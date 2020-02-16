@@ -1,0 +1,383 @@
+<?
+// --------------------------------------------------------------------------
+// Foto-Webcam.eu
+// Global configuration
+//
+// Flori Radlherr, http://www.radlherr.de
+// This is free software, see COPYING for details.
+// --------------------------------------------------------------------------
+
+// The website
+if (isset($currentHost) && !preg_match("/test/", $currentHost)) {
+  $webcam['server']= "www.foto-webcam.eu";
+}
+$webcam['uri']=    "/webcam";
+
+// Image upload
+$webcam['uploadkey']=   "****************";
+$webcam['topOffset']=   200;
+$webcam['maxGamma']=    1.5;
+$webcam['maxIso']=      400;
+$webcam['maxExposure']= 0;
+
+// Standard image formats
+$webcam['aspectRatio']= 16/9;
+$webcam['mainWidth']=   816;
+$webcam['hdWidth']=     1200;
+$webcam['thumbWidth']=  114;
+$webcam['hugeWidth']=   4272;
+$webcam['hugeHeight']=  2848;
+
+// Additional formats stored in "current" folder
+$webcam['resolutions']= Array(150,180,240,320,400,640,720,816,1200,1280,1600,1920);
+
+// When to refresh a shown image
+$webcam['actMinute']=   2;
+
+// When to capture the image
+$webcam['captureInterval']= 600;
+$webcam['captureOffset']= 0;
+// Special capture times mmddHHMM (regexp format) -> New year firework
+$webcam['specialTimes']= "/(12312354|12312357|01010003|01010006)/";
+
+// This message is shown if no current image could be obtained
+$webcam['errorMsg']= 
+        "Wegen einer technischen Störung ist die Kamera derzeit offline";
+
+// From these referrers, do not honour the full uri
+$webcam['ignoreHash']= "roberge.de";
+
+$webcam['frameOk']= "foto-webcam.eu|foto-webcam.com";
+
+// List additional cameras on this site or cross-linked
+// each is: Array(Name, Current-Image-Url, Link-Url, Title)
+$webcam['overview']= Array(
+  Array("lienz", null, null,
+        "Lienz / Zettersfeld - Blick in die Lienzer Dolomiten",
+        "Lienz Zettersfeld"),
+  Array("kronplatz", null, null,
+        "Kronplatz - Bruneck / Pustertal - ".
+        "Blick nach Norden über das Tauferer Tal"),
+  Array("bruneck", null, null,
+        "Bruneck - Pustertal / Südtirol - Blick nach Südwesten"),
+  Array("chavalatsch", null, null,
+        "Piz Chavalatsch - Sulden / Vinschgau - Blick nach Südosten zum Ortler",
+        "Piz Chavalatsch"),
+  Array("sonnblick", null, null,
+        "Sonnblick Observatorium - Blick nach Südwesten"),
+  Array("zellamsee", null, null,
+        "Zell am See-Kaprun - Blick zum Kitzsteinhorn und zur Schmittenhöhe",
+        "Zell am See"),
+  Array("passthurn", null, null,
+        "Gasthof Hohe Brücke - Pass Thurn - Hohe Tauern / Oberpinzgau",
+        "Pass Thurn"),
+  Array("gefrorenewand", null, null,
+        "Gefrorene Wand / Hintertuxer Gletscher - Blick nach Nordwesten",
+        "Gefrorene Wand"),
+  Array("tuxertal", null, null,
+        "Wanglspitz - Blick nach Südwesten ins Tuxertal",
+        "Tuxertal"),
+  Array("marquartstein", null, null,
+        "Marquartstein-Süd - Blick nach Osten"),
+  Array("badtoelz", null, null,
+        "BOS Bad Tölz - Blick zu Brauneck und Blomberg",
+        "Bad Tölz"),
+  Array("garland", null, null,
+        "Brauneck Garland - Blick über Bad Tölz nach Norden",
+        "Brauneck Garland"),
+  Array("kochelsee", null, null,
+        "Herzogstand/Fahrenbergkopf - Über den Kochelsee ins Oberland",
+        "Herzogstand Nord"),
+  Array("herzogstand", null, null,
+        "Herzogstand/Fahrenbergkopf - Richtung Walchensee und Karwendel",
+        "Herzogstand Süd"),
+  Array("karwendel", null, null,
+        "Karwendelbahn - Mittenwald - Blick nach Nordosten"),
+  Array("unterammergau", null, null,
+        "Unterammergau - Blick nach Südosten zum Laber, Fricken und Kofel"),
+  Array("tegelberg", null, null,
+        "Tegelberghaus - Ostallgäu - Blick auf Füssen und den Forggensee",
+        "Tegelberg"),
+  Array("wien", null, null,
+        "Wien-Brigittenau - Blick von der UBIMET-Zentrale nach Südwesten"),
+  Array("freimann", null, null,
+        "Studentenstadt München-Freimann nach Norden",
+        "Freimann Nord"),
+  Array("muenchen", null, null,
+        "Studentenstadt München-Freimann nach Süden",
+        "Freimann Süd"),
+  Array("grandsberg", null, null,
+        "Grandsberg - Schwarzach / Bayerischer Wald - Blick nach Süden"),
+  Array("norderney", null, null,
+        "Norderney / Ostfriesland - Blick nach Nordwesten")
+);
+
+// Hide camera images older than this time (seconds)
+$webcam['overviewHideTime']= 1800;
+
+$webcam['extOverview']= Array(
+  Array("caporeamol", 
+        "http://www.addicted-sports.com/fileadmin/webcam/caporeamol/current/", 
+        "http://www.addicted-sports.com/windsurfen/webcam/gardasee/caporeamol/",
+        "www.addicted-sports.com: ".
+        "Blick über den Gardasee von Capo Reamol"),
+  Array("malcesine", 
+        "http://www.addicted-sports.com/fileadmin/webcam/Gardasee/current", 
+        "http://www.addicted-sports.com/windsurfen/webcam/gardasee/malcesine/",
+        "www.addicted-sports.com: ".
+        "Blick über den Gardasee von Malcesine"),
+  Array("cully", 
+        "http://www.foto-webcam.ch/webcam/cully/current", 
+        "http://www.foto-webcam.ch/webcam/cully/",
+        "foto-webcam.ch: Cully Genève - Blick Richtung Montreux und Martiny"),
+  Array("cabezo", 
+        "http://cabezo.bergfex.at/webcam/cabezo/current", 
+        "http://cabezo.bergfex.at/webcam/cabezo/",
+        "bergfex.at: Cabezo/Medano Tenerife"),
+  Array("duel", 
+        "http://www.panorama-blick.at/webcam/duel/current",
+        "http://www.panorama-blick.at/webcam/duel/", 
+        "panorama-blick.at: Wernberg / Duel - Blick nach Süden zum Mittagskogel"),
+  Array("flattach", 
+        "http://www.panorama-blick.at/webcam/flattach/current",
+        "http://www.panorama-blick.at/webcam/flattach/", 
+        "panorama-blick.at: Flattach / Appartementhaus Lercher - Blick Richtung Osten"),
+  Array("winklern", 
+        "http://www.panorama-blick.at/webcam/winklern/current",
+        "http://www.panorama-blick.at/webcam/winklern/", 
+        "panorama-blick.at: Winklern im Mölltal / Penzelberg - Blick Richtung Osten"),
+  Array("lorenzalm", 
+        "http://www.panorama-blick.at/webcam/lorenzalm/current",
+        "http://www.panorama-blick.at/webcam/lorenzalm/", 
+        "panorama-blick.at: Mörtschach im Mölltal / Kärnten"),
+  Array("sadnighaus", 
+        "http://www.panorama-blick.at/webcam/sadnighaus/current",
+        "http://www.panorama-blick.at/webcam/sadnighaus/", 
+        "panorama-blick.at: Astental / Sadnighaus - Blick Richtung Norden"),
+  Array("burgstalleralm", 
+        "http://www.panorama-blick.at/webcam/burgstalleralm/current",
+        "http://www.panorama-blick.at/webcam/burgstalleralm/", 
+        "panorama-blick.at: Astental / Burgstalleralm - Blick Richtung Südwesten"),
+  Array("sonnblickbasis", 
+        "http://www.panorama-blick.at/webcam/sonnblickbasis/current",
+        "http://www.panorama-blick.at/webcam/sonnblickbasis/", 
+        "panorama-blick.at: Naturfreundehaus Kolm Saigurn / Rauriser Tal"),
+  Array("prasserbad", 
+        "http://www.fw-tegernsee.de/webcam/prasserbad/current",
+        "http://www.fw-tegernsee.de/webcam/prasserbad/", 
+        "Bootsverleih Prasserbad am Tegernsee"),
+  Array("brauneck", 
+        "http://www.foto-webcam.com/webcam/BrauneckKarwendel/current",
+        "http://www.foto-webcam.com/webcam/BrauneckKarwendel/", 
+        "foto-webcam.com: Brauneck Bergstation Richtung Karwendelgebirge"),
+  Array("hoefen", 
+        "http://www.foto-webcam.com/webcam/hoefen/current",
+        "http://www.foto-webcam.com/webcam/hoefen/", 
+        "foto-webcam.com: Testbetrieb Solar-Kamera in Jachenau/Höfen"),
+  Array("walchensee", 
+        "http://www.addicted-sports.com/fileadmin/webcam/Walchensee/current", 
+        "http://www.addicted-sports.com/windsurfen/webcam/walchensee/urfeld/",
+        "www.addicted-sports.com: ".
+        "Blick vom Hotel Karwendelblick zum Walchensee"),
+  Array("trimini", 
+        "http://www.addicted-sports.com/fileadmin/webcam/Kochelsee/current", 
+        "http://www.addicted-sports.com/windsurfen/webcam/kochelsee/trimini/",
+        "www.addicted-sports.com: ".
+        "Blick vom Kristall trimini zum Kochelsee und Herzogstand"),
+  Array("pfronten", 
+        "http://www.foto-webcam.net/webcam/pfronten/current", 
+        "http://www.foto-webcam.net/webcam/pfronten/",
+        "foto-webcam.net: ".
+        "Pfronten, Blick Richtung Süd-Ost"),
+  Array("nussbaumen", 
+        "http://www.foto-webcam.ch/webcam/nussbaumen/current", 
+        "http://www.foto-webcam.ch/webcam/nussbaumen/",
+        "foto-webcam.ch: ".
+        "Nussbaumen bei Baden / Schweiz"),
+  Array("starnbergersee", 
+        "http://www.addicted-sports.com/fileadmin/webcam/starnbergersee/current", 
+        "http://www.addicted-sports.com/windsurfen/webcam/starnbergersee/ammerland/",
+        "www.addicted-sports.com: ".
+        "Blick von Ammerland über den Starnberger See"),
+  Array("ammersee", 
+        "http://www.addicted-sports.com/fileadmin/webcam/Ammersee/current", 
+        "http://www.addicted-sports.com/windsurfen/webcam/ammersee/herrsching/",
+        "www.addicted-sports.com: ".
+        "Blick von Herrsching über den Ammersee"),
+  Array("wienerbergcity", 
+        "http://www.zesch.com/webcam/CAMWBC/current", 
+        "http://www.zesch.com/webcam/CAMWBC/",
+        "zesch.com: Wien-Favoriten - Blick von der Wienerbergcity nach Südwesten"),
+  Array("burghausen", 
+        "http://www.foto-webcam.net/webcam/burghausen2/current", 
+        "http://www.foto-webcam.net/webcam/burghausen2/",
+        "foto-webcam.net: ".
+        "Burghausen - Blick auf die Burg"),
+  Array("esg-muenchen", 
+        "http://www.esg.de/fr-webcam/current/", 
+        "http://www.esg.de/fr-webcam/",
+        "ESG-Büro München zum Olympiagelände"),
+  Array("kloster-ffb", 
+        "/webcam/tmp/kloster-ffb/current", 
+        "http://www.esg.de/klostercam/",
+        "Kloster Fürstenfeld in Fürstenfeldbruck"),
+  Array("stroheim", 
+        "/webcam/tmp/stroheim/current",
+        "http://webcam.wetterstation-stroheim.at/webcam1/", 
+        "Wetterstation Stroheim in Oberösterreich"),
+  Array("landshut", 
+        "/webcam/tmp/landshut/current",
+        "http://stwo.biz:8081/webcam/DM0FFL/", 
+        "Funkfreunde Landshut e.V."),
+  Array("hoherbogen", 
+        "http://www.asam-live.de/webcam/amberg1/current",
+        "http://www.asam-live.de/webcam/amberg1/", 
+        "ASAM-live.de: Blick vom Hohen Bogen ins Kötztinger Land"),
+  Array("amberg", 
+        "http://www.asam-live.de/webcam/amberg92/current",
+        "http://www.asam-live.de/webcam/amberg92/", 
+        "ASAM-live.de: Amberg vom Mariahilfberg"),
+  Array("dl0ao", 
+        "http://www.asam-live.de/webcam/mariahilfberg1/current",
+        "http://www.asam-live.de/webcam/mariahilfberg1/", 
+        "ASAM-live.de: DL0AO nach Amberg - Webcams in Amberg/Sulzbach und Umgebung"),
+  Array("maxhuette", 
+        "http://www.asam-live.de/webcam/amberg33/current",
+        "http://www.asam-live.de/webcam/amberg33/", 
+        "ASAM-live.de: Maxhütte - Webcams in Amberg/Sulzbach und Umgebung"),
+  Array("brombachsee", 
+        "http://www.addicted-sports.com/fileadmin/webcam/Brombachsee/current/", 
+        "http://www.addicted-sports.com/kitesurfen/webcam/brombachsee/ramsberg/",
+        "www.addicted-sports.com: ".
+        "Brombachsee - Blick von Ramsberg nach Nordosten"),
+#  Array("oberpfalzturm", 
+#        "http://www.asam-live.de/webcam/oberpfalzturm2/current",
+#        "http://www.asam-live.de/webcam/oberpfalzturm2/", 
+#        "ASAM-live.de: Oberpfalzturm - Webcams in Amberg/Sulzbach und Umgebung"),
+  Array("vallendar", 
+        "/webcam/tmp/vallendar/current",
+        #"http://www.wetterstation-vallendar.de/html/current/",
+        "http://www.wetterstation-vallendar.de/",
+        "Wetterstation Vallendar im Landkreis Mayen/Koblenz"),
+  Array("humboldthoehe", 
+        "/webcam/tmp/humboldthoehe/current",
+        #"http://www.wetterstation-vallendar.de/html/current/",
+        "http://www.wetterstation-vallendar.de/html/humboldthoehe.jpg",
+        "Wetterstation Vallendar/Humboldthöhe im Landkreis Mayen/Koblenz"),
+  Array("bielefeld", 
+        "/webcam/tmp/bielefeld/current",
+        "http://hamnet-bielefeld.de/webcam/bielefeld/", 
+        "hamnet-bielefeld.de - DB0BI: ".
+        "Hünenburg / Teutoburger Wald nach Bielefeld")
+);
+// ----------------------------------------------------------------------------
+// Tell that we have already jQuery included in our nav header
+$webcam['navHasjQuery']= true;
+
+// Generate HTML navigation header
+$webcam['navHeader']= function() {
+  global $webcam;
+  global $currentRoot;
+  require_once("$currentRoot/include/navigation.php");
+  $webcamWorkuri= $webcam['workUri'];
+
+  navLeftBox("
+  <div style='margin: 8px;'>
+  <a class='menu menu-norm' href='$webcamWorkuri/infos/'>Infos zur Webcam</a>
+  <a class='menu menu-norm' href='$webcamWorkuri/'>Zum aktuellen Bild</a>
+  <div style='margin: 5px;'></div>
+  </div>
+  <noscript>
+  <div style='margin-left: 8px;'>
+  Webcam-Archiv ist<br>
+  nur mit JavaScript<br>
+  nutzbar.
+  </div>
+  </noscript>
+  <div style='margin: 5px;'></div>");
+
+  navFullHeader($webcam['title'], $webcam['short'], 
+        "Fotokamera als Webcam: ".$webcam['title'], @$webcam['keywords']);
+};
+
+// ----------------------------------------------------------------------------
+// Generate page footer
+$webcam['navFooter']= function() {
+  navEnd();
+};
+
+// ----------------------------------------------------------------------------
+// Mysql login data for weather storage
+$webcam['mysqlHost']=     "localhost";
+$webcam['mysqlLogin']=    "fotowebcam";
+$webcam['mysqlPassword']= "****";
+$webcam['mysqlDatabase']= "fotowebcam";
+
+// Browse over database instead of file system
+$webcam['useDatabase']= true;
+
+// ----------------------------------------------------------------------------
+// Write weather or temperature values to RRD graph
+$webcam['rrdFunc']= function($fields) {
+  global $webcam;
+  $keys= array_keys($fields);
+
+  $rrd= "/home/rdh/bin/mkrrd ".$webcam['workPath']."/wetter/wx.rrd";
+  foreach ($keys as $key) {
+    $rrd.= " $key=".$fields{$key};
+  }
+  system($rrd);
+};
+
+// ----------------------------------------------------------------------------
+// Banner Lawinenwarndienst Bayern
+$webcam['lawinenlageBayern']= str_replace("\n", "" ,"
+<style>
+.lw { 
+  overflow:hidden;
+  width:144px;
+  height:58px;
+  margin-top: 10px;
+  margin-left:-4px;
+  border:1px solid #d0d0d0;
+}
+.lw img {
+  margin-left:-6px;
+  margin-top:-1px;
+}
+</style>
+<center><div class='lw'>
+<img src='http://www.lawinenwarndienst-bayern.de/download/lagebericht/lwd_banner_156x60.png' 
+      border='0' title='Zum Lawinenlagebericht Bayern' 
+      width='156' height='60' usemap='#lb_156x60' />
+<map name='lb_156x60'>
+<area shape=rect coords='0,0,156,21' 
+      href='http://www.lawinenwarndienst-bayern.de/lagebericht/index.php' 
+      target='_blank' title='Zum Lawinenlagebericht Bayern'>
+<area shape=rect coords='0,21,29,59' 
+      href='http://www.lawinenwarndienst-bayern.de/lagebericht/index.php' 
+      target='_blank' title='ALL: Allgäuer Alpen' />
+<area shape=rect coords='30,21,53,59' 
+      href='http://www.lawinenwarndienst-bayern.de/lagebericht/index.php' 
+      target='_blank' title='AMM: Ammergauer Alpen' />
+<area shape=rect coords='54,21,78,59' 
+      href='http://www.lawinenwarndienst-bayern.de/lagebericht/index.php' 
+      target='_blank' title='WFK: Werdenfelser Alpen' />
+<area shape=rect coords='79,21,101,59' 
+      href='http://www.lawinenwarndienst-bayern.de/lagebericht/index.php' 
+      target='_blank' title='BVA: Bayerische Voralpen' />
+<area shape=rect coords='102,21,125,59' 
+      href='http://www.lawinenwarndienst-bayern.de/lagebericht/index.php' 
+      target='_blank' title='CHG: Chiemgauer Alpen' />
+<area shape=rect coords='126,21,156,59' 
+      href='http://www.lawinenwarndienst-bayern.de/lagebericht/index.php' 
+      target='_blank' title='BGD: Berchtesgadener Alpen' />
+<area shape=default 
+      href='http://www.lawinenwarndienst-bayern.de/lagebericht/index.php' 
+      target='_blank' title='Zum Lawinenlagebericht Bayern' />
+</map>
+</div></center>
+");
+$webcam['lawinenlageBayern']= "";
+
+?>

@@ -1,0 +1,7 @@
+Model|Canon EOS 1100D
+Exposure Time|25 sec.
+FNumber|f/3.5
+ISO|100
+Exposure Bias|0.0 eV
+Focal Length|22mm
+Luminance|38.1 %

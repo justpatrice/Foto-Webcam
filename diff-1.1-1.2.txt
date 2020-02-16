@@ -1,0 +1,1365 @@
+diff -r foto-webcam-1.1/bin/do_webcam foto-webcam-1.2/bin/do_webcam
+8a9,11
+> # If a second command line parameter is given, the log is written
+> # to stdout rather than file
+> #
+17c20
+<   echo "Usage: $0 <hostname>"
+---
+>   echo "Usage: $0 <hostname> [ showlog ]"
+41c44,49
+< capture 2>&1 >>$log
+---
+> if [ -n "$2" ]
+> then
+>   capture
+> else
+>   capture 2>&1 >>$log
+> fi
+diff -r foto-webcam-1.1/bin/fetch_and_upload foto-webcam-1.2/bin/fetch_and_upload
+12c12
+< # Image source
+---
+> # Image source (TODO: replace with your data source and destination!)
+Only in foto-webcam-1.2: diff-1.1-1.2.txt
+Only in foto-webcam-1.2/htdocs/webcam/beispiel/current: 150.jpg
+Binary files foto-webcam-1.1/htdocs/webcam/beispiel/current/180.jpg and foto-webcam-1.2/htdocs/webcam/beispiel/current/180.jpg differ
+Only in foto-webcam-1.2/htdocs/webcam/beispiel/current: 240.jpg
+Only in foto-webcam-1.2/htdocs/webcam/beispiel/current: 320.jpg
+Only in foto-webcam-1.2/htdocs/webcam/beispiel/current: 400.jpg
+Only in foto-webcam-1.2/htdocs/webcam/beispiel/current: 614.jpg
+Only in foto-webcam-1.2/htdocs/webcam/beispiel/current: 640.jpg
+Only in foto-webcam-1.2/htdocs/webcam/beispiel/current: 720.jpg
+Only in foto-webcam-1.2/htdocs/webcam/beispiel/current: 816.jpg
+diff -r foto-webcam-1.1/htdocs/webcam/include/bestof.php foto-webcam-1.2/htdocs/webcam/include/bestof.php
+14,15c14,16
+< $path= $webcam['workPath'];
+< $img=  $webcam['parImg'];
+---
+> $path=  $webcam['workPath'];
+> $img=   $webcam['parImg'];
+> $wcdir= $webcam['uri']."/".$webcam['name'];
+49c50
+<     ";".$_SERVER{'REMOTE_ADDR'}.";$wcdir/$wc/$img\n");
+---
+>     ";".$_SERVER{'REMOTE_ADDR'}.";$wcdir/$img\n");
+diff -r foto-webcam-1.1/htdocs/webcam/include/command.php foto-webcam-1.2/htdocs/webcam/include/command.php
+13c13
+< doLog("waiting for command...", "command.php");
+---
+> doLog("waiting for command...", "idle");
+15,16c15,16
+< // Wait abouut 30s for a command
+< for ($i=0; $i<100; $i++) {
+---
+> // Wait about 120s for a command
+> for ($i=0; $i<240; $i++) {
+24c24,25
+<       doLog($cmd, "command.php");
+---
+>       $cmd= preg_replace("/\n/", " ", $cmd);
+>       doLog($cmd, "command-exec");
+28c29
+<   usleep(300000); // wait 300ms
+---
+>   usleep(500000); // wait 500ms
+diff -r foto-webcam-1.1/htdocs/webcam/include/config.php-fotowebcam.eu foto-webcam-1.2/htdocs/webcam/include/config.php-fotowebcam.eu
+15c15
+< $webcam['uploadkey']=   "replacethistoyourkey";
+---
+> $webcam['uploadkey']=   "****************";
+30c30
+< $webcam['resolutions']= Array(150,180,240,320,400,640,720,816,1200,1600);
+---
+> $webcam['resolutions']= Array(150,180,240,320,400,614,640,720,816,1200,1600);
+34a35,37
+> $webcam['errorMsg']= 
+>         "Wegen einer technischen Störung ist die Kamera derzeit offline";
+> 
+63a67,82
+> $webcam['extOverview']= Array(
+>   Array("walchensee", 
+>         "http://www.addicted-sports.com/fileadmin/webcam/Walchensee/current", 
+>         "http://www.addicted-sports.com/windsurfen/webcamwetter/walchensee/",
+>         "www.addicted-sports.com: ".
+>         "Blick vom Hotel Karwendelblick zum Walchensee"),
+>   Array("trimini", 
+>         "http://www.addicted-sports.com/fileadmin/webcam/Kochelsee/current", 
+>         "http://www.addicted-sports.com/windsurfen/webcamwetter/kochelsee/",
+>         "www.addicted-sports.com: ".
+>         "Blick vom Kristall trimini zum Kochelsee und Herzogstand"),
+>   Array("holzkirchen", 
+>         "/webcam/holzkirchen/current",
+>         "http://www.sircar.de/webcam/", 
+>         "www.sircar.de: Blick nach Südosten bei Gunnar in Holzkirchen")
+> );
+79,80d97
+<   <a class='menu menu-norm' href='$webcamWorkuri/current/full.jpg' 
+<      title='Bild in höchster Auflösung darstellen'>Volle Auflösung</a>
+100c117,138
+< }
+---
+> };
+> 
+> // ----------------------------------------------------------------------------
+> // Mysql login data for weather storage
+> $webcam['mysqlHost']=     "localhost";
+> $webcam['mysqlLogin']=    "****";
+> $webcam['mysqlPassword']= "****";
+> $webcam['mysqlDatabase']= "****";
+> 
+> // ----------------------------------------------------------------------------
+> // Write weather or temperature values to RRD graph
+> $webcam['rrdFunc']= function($fields) {
+>   global $webcam;
+>   $keys= array_keys($fields);
+> 
+>   $rrd= "/home/rdh/bin/mkrrd ".$webcam['workPath']."/wetter/wx.rrd";
+>   foreach ($keys as $key) {
+>     $rrd.= " $key=".$fields{$key};
+>   }
+>   system($rrd);
+> };
+> 
+Only in foto-webcam-1.2/htdocs/webcam/include: COPYING
+diff -r foto-webcam-1.1/htdocs/webcam/include/fullsize.php foto-webcam-1.2/htdocs/webcam/include/fullsize.php
+14a15
+> $inc=     $webcam['includeUri'];
+17,18c18
+< // Bildgroesse dynamisch aus dem Bild lesen, kann ggf. auch gegen
+< // statische Angabe ersetzt werden, wenn Utility nicht ausfuehrbar ist
+---
+> // Read actual image size to have the correct rectangle
+44,45c44,45
+< $ua=   $_SERVER['HTTP_USER_AGENT'];
+< if (preg_match("/(symbian|mobile|fennec|android|iphone|ipad)/", $ua)) {
+---
+> $ua= $_SERVER['HTTP_USER_AGENT'];
+> if (preg_match("/(symbian|mobile|fennec|android|iphone|ipad)/i", $ua)) {
+112c112
+< <script language="JavaScript" src="/include/jquery.js"></script>
+---
+> <script language="JavaScript" src="$inc/jquery.js"></script>
+125c125
+< <img src="${webcam['includeUri']}/anpassen.png" 
+---
+> <img src="$inc/anpassen.png" 
+diff -r foto-webcam-1.1/htdocs/webcam/include/imgutil.php foto-webcam-1.2/htdocs/webcam/include/imgutil.php
+66a67
+>   global $webcam;
+68a70,74
+>   $ymin= 0;
+>   if ($ymax>0) {
+>     $ymin=  $webcam['topOffset'];
+>     $ymax+= $webcam['topOffset'];
+>   }
+74,75c80,81
+<   for($y=0; $y<$ymax; $y+= $step) {
+<     for($x=0; $x<$xmax; $x+= $step) {
+---
+>   for($y= $ymin; $y<$ymax; $y+= $step) {
+>     for($x= 0; $x<$xmax; $x+= $step) {
+94a101,106
+>   global $webcam;
+>   $x= 40;
+>   $y= 95;
+>   $size= 56;
+>   $font= dirname(__FILE__)."/ubuntu-r.ttf";
+> 
+100c112
+<   if (getLuminance($img, 2000, 200) > $threshold) {
+---
+>   if (getLuminance($img, 1000, 100) > $threshold) {
+102a115,121
+>   $s= $b;
+>   if (isset($webcam['textShadow'])) {
+>     if ($webcam['textShadow'] == "white") $b= 0;
+>     if ($webcam['textShadow'] == "black") $b= 255;
+>     $s= 0; if ($b<128) $s= 255;
+>   }
+> 
+105c124
+<   imagefill($textImg, 0, 0, ImageColorAllocateAlpha($textImg, $b,$b,$b, 127));
+---
+>   imagefill($textImg, 0, 0, ImageColorAllocateAlpha($textImg, $s,$s,$s, 127));
+107,111c126,137
+<   $path= dirname(__FILE__);
+<   ImageTtfText($textImg, 56, 0, 40, 95, 
+<                ImageColorAllocate($textImg, $b,$b,$b), 
+<                "$path/ubuntu-r.ttf", 
+<                $text);
+---
+>   if (isset($webcam['textShadow'])) {
+>     // draw text shadow around the text
+>     for ($xo= -1; $xo<=1; $xo++) {
+>       for ($yo= -1; $yo<=1; $yo++) {
+>         ImageTtfText($textImg, $size, 0, $x+($xo*5), $y+($yo*5), 
+>                ImageColorAllocate($textImg, $s,$s,$s), $font, $text);
+>       }
+>     }
+>     ImageFilter($textImg, IMG_FILTER_SMOOTH, 0);
+>   }
+>   ImageTtfText($textImg, $size, 0, $x, $y, 
+>                ImageColorAllocate($textImg, $b,$b,$b), $font, $text);
+174c200,202
+<   if ($resX<200 || $iso<400 || ($resX<2000 && $iso<3200)) {
+---
+>   if ($iso<400 || $resX<200 ||
+>      ($resX<1000 && $iso<6400) || 
+>      ($resX<2000 && $iso<3200)) {
+310c338
+<     echo("isNight: lat=$lat long=$long sr=$xsr ss=$xss ret=$ret\n");
+---
+>     echoLog("night=$ret lat=$lat long=$long sr=$xsr ss=$xss", "info");
+340c368
+<   echo("Luminance: $lum - Gamma: $gamma - New luminance: $newLum\n");
+---
+>   echoLog("luminance=$lum gamma=$gamma new_lum=$newLum", "info");
+359c387
+<   echo("Model=$model iso=$iso exptime=$et bias=$bias lum=$lum night=$night\n");
+---
+>   echoLog("model=$model iso=$iso exptime=$et bias=$bias lum=$lum", "info");
+374c402
+<     if ($et>25 && $iso<$webcam['maxIso']) {
+---
+>     if ($et>25 && $iso<$webcam['maxIso'] && $lum<25) {
+377c405
+<     if ($et<15 && $iso>=200) {
+---
+>     if ($et<20 && $iso>=200) {
+415,416c443
+<   doLog($cmd, "command", $serial);
+<   echo("Command: $cmd\n");
+---
+>   echoLog($cmd, "command", $serial);
+429c456,462
+< // Write some debugging output
+---
+> // Write some information to standard output and additionally to the log file
+> // --------------------------------------------------------------------------
+> function echoLog($phrase, $facility= "echo", $serial= 0) {
+>   echo("$phrase\n");
+>   doLog($phrase, $facility, $serial);
+> }
+> 
+431c464,466
+< function doLog($phrase, $facility= "log", $serial=0) {
+---
+> // Write some debugging output to log file
+> // --------------------------------------------------------------------------
+> function doLog($phrase, $facility= "log", $serial= 0) {
+436a472,474
+>     // Maintain additionally a global logfile, if open succeeds.
+>     // It is used for a global status recording, but not really needed
+>     $globalFile= @fopen($webcam['workPath']."/../status/tmp/log.txt","a+t");
+438c476
+<     $stamp.= time().";$facility;$serial;";
+---
+>     $stamp.= gettimeofday(true).";$facility;$serial;";
+441c479,485
+<       fputs($logFile, $stamp.$line."\n");
+---
+>       if ($line != "") {
+>         $line= $webcam['name'].";".$stamp.$line."\n";
+>         fputs($logFile, $line);
+>         if ($globalFile) {
+>           fputs($globalFile, $line);
+>         }
+>       }
+443a488,490
+>     if ($globalFile) {
+>       fclose($globalFile);
+>     }
+455c502
+<     echo("No cam parameter given.\n");
+---
+>     echoLog("No cam parameter given.", "error");
+458,459c505,506
+<   if (! preg_match("/^[a-z0-9\-]+$/", $webcam['name'])) {
+<     echo("No cam specified.\n");
+---
+>   if (! preg_match("/^[a-z0-9\-\_]+$/i", $webcam['name'])) {
+>     echoLog("No cam specified.", "error");
+465c512
+<     echo("Cannot load config for {$webcam['name']}\n");
+---
+>     echoLog("Cannot load config for {$webcam['name']}", "error");
+471c518
+<     echo("Unauthorized.");
+---
+>     echoLog("Unauthorized.", "error");
+Only in foto-webcam-1.1/htdocs/webcam/include: jquery-1.7.1.min.js
+Only in foto-webcam-1.2/htdocs/webcam/include: jquery.js
+diff -r foto-webcam-1.1/htdocs/webcam/include/log.php foto-webcam-1.2/htdocs/webcam/include/log.php
+15c15
+<   echo("No upload file.\n");
+---
+>   echoLog("No upload file.");
+19,21c19,21
+< $serial= $_POST['serial'];
+< if (! isset($serial)) {
+<   $serial= 0;
+---
+> $serial= 0;
+> if (isset($_POST['serial'])) {
+>   $serial= $_POST['serial'];
+Only in foto-webcam-1.2/htdocs/webcam/include: logtail.php
+Only in foto-webcam-1.2/htdocs/webcam/include: settings.png
+Only in foto-webcam-1.2/htdocs/webcam/include: settings-rev.png
+Only in foto-webcam-1.2/htdocs/webcam/include: status-120-fail.png
+Only in foto-webcam-1.2/htdocs/webcam/include: status-120-ok.png
+Only in foto-webcam-1.2/htdocs/webcam/include: status.js
+Only in foto-webcam-1.2/htdocs/webcam/include: status.php
+diff -r foto-webcam-1.1/htdocs/webcam/include/upload.php foto-webcam-1.2/htdocs/webcam/include/upload.php
+25c25
+<   echo("No time specified.\n");
+---
+>   echoLog("No time specified.", "error");
+28a29,36
+> $webcamImageName= $webcam['workPath']."/current/raw.jpg";
+> if (!move_uploaded_file($_FILES["upload"]["tmp_name"], $webcamImageName)) {
+>   echoLog("No upload file.", "error");
+>   exit;
+> }
+> $size= filesize($webcamImageName);
+> echoLog("state=processing imagesize=$size", "info");
+> 
+48,54d55
+< 
+< $webcamImageName= $webcam['workPath']."/current/raw.jpg";
+< if (!move_uploaded_file($_FILES["upload"]["tmp_name"], $webcamImageName)) {
+<   echo("No upload file.");
+<   exit;
+< }
+< 
+65c66
+<   echo("No valid JPG input.");
+---
+>   echoLog("No valid JPG input.", "error");
+92c93
+<   echo("Creating $fn\n");
+---
+>   echoLog("Creating $fn", "debug");
+101c102
+<     echo("Creating $fn\n");
+---
+>     echoLog("Creating $fn", "debug");
+112c113
+< echo("Creating ${target_file}sm/la/lm/hu\n");
+---
+> echoLog("Creating ${target_file}sm/la/lm/hu", "debug");
+129c130
+< echo("Creating $fn..\n");
+---
+> echoLog("Creating $fn..", "debug");
+159,160c160,161
+< $elapsed= sprintf("%0.3f", gettimeofday(true)-$btime);
+< echo("ready ({$elapsed}s).\n");
+---
+> $elapsed= round((gettimeofday(true)-$btime)*1000);
+> echoLog("state=ready elapsed={$elapsed} ms.", "info");
+diff -r foto-webcam-1.1/htdocs/webcam/include/webcam.css foto-webcam-1.2/htdocs/webcam/include/webcam.css
+61c61
+<   background: url(/webcam/include/vert-verlauf.png) repeat-x;
+---
+>   background: url(vert-verlauf.png) repeat-x;
+76c76
+<   background: url(/webcam/include/vert-verlauf.png) repeat-x;
+---
+>   background: url(vert-verlauf.png) repeat-x;
+109c109
+<   background: url(/webcam/include/vert-verlauf-we.png) repeat-x;
+---
+>   background: url(vert-verlauf-we.png) repeat-x;
+118c118
+<   background: url(/webcam/include/vert-verlauf.png) repeat-x !important;
+---
+>   background: url(vert-verlauf.png) repeat-x !important;
+125c125
+<   background: url(/webcam/include/vert-verlauf.png) repeat-x;
+---
+>   background: url(vert-verlauf.png) repeat-x;
+131c131
+<   background: url(/webcam/include/vert-verlauf.png) repeat-x !important;
+---
+>   background: url(vert-verlauf.png) repeat-x !important;
+147c147
+<   background: url(/webcam/include/vert-verlauf.png) repeat-x;
+---
+>   background: url(vert-verlauf.png) repeat-x;
+211a212,215
+> img.wcminiimg {
+>   width: 180px;
+>   min-height: 101px;
+> }
+227c231
+<   background: url(/webcam/include/vert-verlauf.png) repeat-x;
+---
+>   background: url(vert-verlauf.png) repeat-x;
+272a277,286
+> #wcinfo-settings {
+>   padding: 10px;
+> }
+> .wcbestof-norm {
+>   background: url(vert-verlauf-we.png) repeat-x;
+> }
+> .wcbestof-hi {
+>   background: #707070;
+>   color: #ffffff;
+> }
+274d287
+<   background: url(/webcam/include/vert-verlauf-we.png) repeat-x;
+287c300
+<   background: url(/webcam/include/trans.png) repeat; /* Wegen MSIE notwendig */
+---
+>   background: url(trans.png) repeat; /* Wegen MSIE notwendig */
+diff -r foto-webcam-1.1/htdocs/webcam/include/webcam.js foto-webcam-1.2/htdocs/webcam/include/webcam.js
+10c10,19
+< // General settings
+---
+> // User defaults (shall be valid user-selectable values, see renderSettings)
+> webcam.def= new Object;
+> webcam.def.fadeDelay= 500;
+> webcam.def.videoFrames= 60;
+> webcam.def.videoDelay= 800;
+> webcam.def.slideDelay= 3;
+> webcam.def.imgSize= 0;
+> 
+> // --------------------------------------------------------------------------
+> // General settings (change only if you are quite sure what you are doing)
+12d20
+< webcam.videoframes= 60;
+16,18d23
+< webcam.debug= true;
+< webcam.videoDelay= 800;
+< webcam.fadeDelay= 500;
+19a25
+> webcam.debug= true;
+35c41
+< webcam.options= new Array("webcams", "infos", "exif", "help", "bestof");
+---
+> webcam.options= new Array("webcams","bestof","infos","exif","help","settings");
+43a50,52
+> webcam.requestNum= 0;
+> webcam.bestofIndex= 0;
+> webcam.slideTimer= null;
+54c63
+<   // ggf. laufendes Video stoppen
+---
+>   // stop possibly running video
+56a66
+>   webcam.requestNum++;
+61c71
+<   // Specials aus der Adresse fischen
+---
+>   // hash-part of URL might contain sub-functions, analyze and execute
+81c91
+<     thumbNumber= webcam.videoframes;
+---
+>     thumbNumber= webcam.videoFrames;
+95a106,139
+>   // options might be also mentioned within hash-part
+>   // if not, stay in current option state
+>   for (var i=0; i<webcam.options.length; i++) {
+>     var opt= webcam.options[i];
+>     if (when.match(opt)) {
+>       webcam.actopt= opt;
+>       when= when.replace("/"+opt, "");
+>     }
+>   }
+>   for (var i=0; i<webcam.options.length; i++) {
+>     var opt= webcam.options[i];
+>     if (opt == webcam.actopt) {
+>       $("#wcopt-"+opt).addClass("wcoptact");
+>       $("#wcinfo-"+opt).fadeIn(500);
+>       // fill static text options with content by AJAX load
+>       if (opt == "infos") {
+>         $("#wcinfo-"+opt).load("?infos=1");
+>       }
+>       if (opt == "help") {
+>         $("#wcinfo-"+opt).load("?help=1");
+>       }
+>     }
+>     else {
+>       // inactive options
+>       $("#wcopt-"+opt).removeClass("wcoptact");
+>       $("#wcinfo-"+opt).hide();
+>     }
+>   }
+>   // special case: settings icon shall render reverse if active
+>   if (webcam.actopt == "settings") {
+>     $("#wcopt-settings-img").attr("src", webcam.inc+"settings-rev.png");
+>   } else {
+>     $("#wcopt-settings-img").attr("src", webcam.inc+"settings.png");
+>   }
+96a141
+>   var requestNum= webcam.requestNum;
+98c143
+<   // Verwaltungsdaten von serverseitigem Skript laden
+---
+>   // fetch image archive meta data from server by AJAX request
+106c151,156
+<     // Fuer eine korrekte Browser-Historie das Hash-Feld befuellen
+---
+>     // avoid overlapping calls caused by further inputs
+>     if (webcam.requestNum != requestNum) {
+>       return;
+>     }
+> 
+>     // set hash part of URL to enable browser history and bookmarking
+120a171,173
+>     if (webcam.actopt != "webcams") {
+>       newhash+= "/"+webcam.actopt;
+>     }
+131c184
+<     // Erst wenn alles eingeschwungen ist, hash-Events wieder respektieren
+---
+>     // hash changes are ignored in transition phases to avoid confusion
+134c187
+<     // Nicht verfuegbare Zeiten ausgrauen
+---
+>     // grey calendar enties without data available
+146c199,203
+<     // Momentan aktive Funktion mit den geladenen Daten ausfuehren
+---
+>     if (!data.isbestof || webcam.actopt!="bestof") {
+>       webcam.stopSlideshow();
+>     }
+> 
+>     // render appropriate data according mode
+156a214
+>       $("#thumbnails").hide();
+159c217
+<       webcam.renderImage();
+---
+>       webcam.renderImage(data.image);
+167c225,228
+<         $("#wcinfo-bestof").html(webcam.renderBestof());
+---
+>         webcam.renderBestof();
+>       }
+>       if (webcam.actopt=="settings") {
+>         webcam.renderSettings();
+174c235
+< // Thumbnail-Darstellung aufbaun
+---
+> // Generate thumbnail table as DHTML
+237c298
+< // Bild in voller Groesse als Fenster aufmachen
+---
+> // Open full-sized image in maximum-sized popup window
+247c308
+<              webcam.name.replace(/[^a-z]/,"")+"_hu",
+---
+>              webcam.name.replace(/[^a-z]/g,"")+"_hu",
+255,259c316,318
+< // Momentanes Bild in Normalgroesse anzeigen, ggf. klickbar fuer volle Groesse
+< webcam.renderImage= function() {
+<   $("#thumbnails").hide();
+<   var img= $(webcam.layerId[webcam.layer]);
+<   img.css("z-index", "1");
+---
+> // Show the current image
+> webcam.renderImage= function(image) {
+>   var src= webcam.url+image;
+261,264c320
+<     img.attr("src", webcam.url+webcam.data.hdimg);
+<   }
+<   else {
+<     img.attr("src", webcam.url+webcam.data.image);
+---
+>     src= src.replace(/_l..jpg/,"_lm.jpg");
+266a323
+>   var img= $(webcam.layerId[webcam.layer]);
+271c328
+<     img.click(webcam.openHugeImage);
+---
+>     img.bind("click", webcam.openHugeImage);
+275d331
+<     img.click(undefined);
+276a333,341
+>     img.unbind("click");
+>   }
+>   if (img.attr("src") == src) { // webkit does not fire of no change
+>     webcam.onImgLoad();
+>   }
+>   else {
+>     img.unbind("load");
+>     img.bind("load", webcam.onImgLoad);
+>     img.attr("src", src);
+281c346
+< // Thumbnaildarstellung veranlassen
+---
+> // Start rendering thumbnails
+292c357
+< // Videosequenz veranlassen
+---
+> // Start rendering a video
+298c363
+< // Videosequenz fortsetzen und Ueberblendung veranlassen
+---
+> // Continue playing a video, fetch next frame
+306c371
+<       // Video ist fertig, zurueck zur Ausgangsposition springen
+---
+>       // we are ready, the last frame is the current image
+310c375
+<       // Progressbar unter dem Bild anzeigen
+---
+>       // render a simple progress bar below the image
+317c382
+<       // Neues Bild nachladen
+---
+>       // show the next image
+320,325c385
+<       img.css("z-index", "1");
+<       var imgname= webcam.url+webcam.vidarr[webcam.vidptr++];
+<       if (webcam.isHdSize && webcam.data.hdimg.length>0) {
+<         imgname= imgname.replace(/_l..jpg/,"_lm.jpg");
+<       }
+<       img.attr("src", imgname);
+---
+>       webcam.renderImage(webcam.vidarr[webcam.vidptr++]);
+332c392
+< // Wenn Bild fertig geladen, auf aktuelles Bild ueberblenden
+---
+> // When an image has been load into the browser, fade from last to recent image
+334,336c394,396
+< // Wird aufgerufen
+< // - Wenn das Laden eines Bildes abgeschlossen ist und Videotimer nicht laeuft
+< // - Wenn der Videotimer abgelaufen ist und das Bild bereits geladen ist
+---
+> // Is called when
+> // - image load event is fired
+> // - video timer has expired and image is ready to display
+338,339c398,399
+< // Dadurch wird eine halbwegs konstante Framerate bei unterschiedlichen
+< // Netzwerk- und Browsergeschwindigkeiten erreicht.
+---
+> // This is the try to achieve a constant frame rate. Obviously that is not
+> // really sufficiant.
+345c405,406
+<     $("#wcloadimg").css("display", "none"); // Ladeanimation unsichtbar machen
+---
+>     $("#wcloadimg").css("display", "none"); // hide animated load-icon
+>     $(webcam.layerId[webcam.layer]).css("z-index", "1");
+347a409,410
+>     var hidelayer2= (webcam.layer+(webcam.layers-2))%webcam.layers;
+>     $(webcam.layerId[hidelayer2]).css("z-index", "0");
+352a416
+>     var requestNum= webcam.requestNum;
+353a418,420
+>       if (webcam.requestNum != requestNum) {
+>         return;
+>       }
+361c428
+<     // Wenn das Bild dargestellt wird, Nachladen des naechsten Bildes starten
+---
+>     // if we are ready, check for next frame
+367c434
+< // Event, wenn ein Bild fertig geladen wurde
+---
+> // Image has been load and fires this event
+370c437
+<   // So lange der Video-Timer laeuft, Bild nicht darstellen
+---
+>   // wait for video timer to avoid rendering too early
+377c444
+< // Tageweise durch die Historie scrollen
+---
+> // Scroll through history day by day
+383c450
+<     // Wenn Datum schon heute ist, nicht weiterschalten
+---
+>     // we have already reached the date today, do not advance beyond
+414c481
+<   // Ggf. fuehrende Nullen wiederherstellen
+---
+>   // render leading zeroes (missing sprintf ;-)
+435c502
+< // Durch bildweise Historie scrollen
+---
+> // Scroll through the image history
+476c543
+< // Position der Thumbnail-Liste animieren
+---
+> // Soft-scroll the thumbnail list when changing the time
+516c583
+<       // Liste erst scrollen, und dann nachladen
+---
+>       // list is first scrolled, then filled with missing parts
+524c591
+< // Momentan aktive Kalenderzeitpunkte und Funktionen grau hinterlegen
+---
+> // mark current image within the calendar
+530c597
+<   // Datum und Stunde aktualisieren
+---
+>   // year, month, day and hour
+551c618
+<       // Wochentag beim Tag anzeigen
+---
+>       // render weekday names
+566c633
+<   // Minute aktualisieren
+---
+>   // render minute-field appropriate
+572c639
+<       // Auch beim Video spielen: Dort ist es aber eine andere Quelle
+---
+>       // a running video has a slighty differen mechanism for the current pic
+596c663
+<     // Aktuell-Knopf dem Ist-Stand anpassen
+---
+>     // the button for the current image
+605c672
+<   // Knoepfe fuer Thumbnails und Video mit Leben fuellen
+---
+>   // activate or deactivate the buttons for video/thumbnails
+623c690
+<       rev= "-rev"; // zum Aktivieren braucht es Icon mit weissem Bild
+---
+>       rev= "-rev"; // use icon containing white symbol
+634c701
+< // Gutes Bild markieren
+---
+> // Mark image es "bestof" if or remove it from list if active
+638c705
+<       "Dieses Bild wieder aus der Liste der besten Bilder entfernen?")) {
+---
+>       "Dieses Bild aus der Liste der besten Bilder entfernen?")) {
+646c713
+<         "unterscheiden.\n\nVielen Dank :-)\nFlori")) {
+---
+>         "unterscheiden.\n\nVielen Dank :-)")) {
+658c725
+< // Icon fuer gutes Bild zeigen oder verschwinden lassen
+---
+> // If appropriate, show star-icon for best images
+673c740
+< // Zeige die besten Bilder als Thumbnails
+---
+> // Show the page with the stored "bestof"-images
+674a742
+>   var ret= "Keine Bilder gefunden.";
+676c744,766
+<     var ret= "";
+---
+>     ret=  "<table cellspacing=0 cellpadding=0 border=0 width='100%'>"+
+>           "<tr><td align='left'>";
+>     ret+= "<a href='javascript:webcam.seekBestof(false)'>"+
+>           "<img align='absmiddle' src='"+webcam.inc+"pf_li_20.png'></a>";
+> 
+>     ret+= "</td><td align='center'>";
+>     if (webcam.slideTimer) {
+>       ret+= 
+>         "<a href='javascript:webcam.stopSlideshow();webcam.renderBestof()'>"+
+>         "<img align='absmiddle' src='"+webcam.inc+
+>         "loading-16.gif'> Diashow beenden</a></td>";
+>     }
+>     else {
+>       ret+= 
+>         "<a href='javascript:webcam.startSlideshow();webcam.renderBestof()'>"+
+>         "Diashow starten</a></td>";
+>     }
+>     ret+= "<td align='right'>";
+> 
+>     ret+= "<a href='javascript:webcam.seekBestof(true)'>"+
+>           "<img align='absmiddle' src='"+webcam.inc+"pf_re_20.png'></a>";
+>     ret+= "</td></tr></table><div style='height:10px'></div>";
+> 
+679c769
+<       // Lesbares Datum erzeugen
+---
+>       // Convert date/time into a human readable format
+686c776,781
+<       ret+= "<div class='wcbestof' "+
+---
+>       var cl= "wcbestof-norm";
+>       if (webcam.data.image.match(go)) {
+>         cl= "wcbestof-hi";
+>         webcam.bestofIndex= i;
+>       }
+>       ret+= "<div class='wcbestof "+cl+"' "+
+695d789
+<     return ret;
+697,698c791,821
+<   else {
+<     return "Keine Bilder gefunden.";
+---
+>   $("#wcinfo-bestof").html(ret);
+> }
+> 
+> // ****************************************************************************
+> // Position to a the next/recent image in the bestof-list
+> webcam.seekBestof= function(back) {
+>   if (webcam.data.bestof && webcam.data.bestof.length) {
+>     if (back) {
+>       webcam.bestofIndex++;
+>       if (webcam.bestofIndex>=webcam.data.bestof.length) {
+>         webcam.bestofIndex= 0;
+>       }
+>     }
+>     else {
+>       if (webcam.bestofIndex>0) {
+>         webcam.bestofIndex--;
+>       }
+>       else {
+>         webcam.bestofIndex= webcam.data.bestof.length-1;
+>       }
+>     }
+>     webcam.go(webcam.data.bestof[webcam.bestofIndex]);
+>   }
+> }
+> 
+> // ****************************************************************************
+> // Show a slide show of best images
+> webcam.stopSlideshow= function() {
+>   if (webcam.slideTimer) {
+>     clearTimeout(webcam.slideTimer);
+>     webcam.slideTimer= null;
+701a825,972
+> webcam.startSlideshow= function() {
+>   webcam.stopSlideshow();
+>   if (webcam.data.bestof && webcam.data.bestof.length) {
+>     if (! webcam.data.isbestof) {
+>       webcam.go(webcam.data.bestof[0]);
+>     }
+>     webcam.slideTimer= setTimeout(function() {
+>       webcam.seekBestof(true);
+>       webcam.startSlideshow();
+>     }, webcam.slideDelay*1000);
+>   }
+> }
+> 
+> 
+> 
+> // ****************************************************************************
+> // Set settings to the default values (initially called)
+> webcam.defaultSettings= function() {
+>   webcam.fadeDelay=   webcam.def.fadeDelay;
+>   webcam.videoFrames= webcam.def.videoFrames;
+>   webcam.videoDelay=  webcam.def.videoDelay;
+>   webcam.slideDelay=  webcam.def.slideDelay;
+>   webcam.imgSize=     webcam.def.imgSize;
+> }
+> 
+> // ****************************************************************************
+> // Read possibly prior stored settings from cookie values
+> webcam.readSettings= function() {
+>   webcam.defaultSettings();
+>   var m= /wcsettings=([0-9a-z,:]+)/i;
+>   var r= m.exec(document.cookie);
+>   if (r) {
+>     var args= r[1].split(",")
+>     for (var i=0; i<args.length; i++) {
+>       var par= args[i].split(":");
+>       if (par.length==2) {
+>         webcam[par[0]]= parseInt(par[1]);
+>       }
+>     }
+>   }
+> }
+> 
+> // ****************************************************************************
+> // Set settings to default and remove settings cookie
+> webcam.removeSettings= function() {
+>   webcam.defaultSettings();
+>   // cookie expires now and thus is not longer stored
+>   document.cookie= "wcsettings=; path=/; expires="+new Date().toGMTString();
+>   webcam.renderSettings();
+> }
+> 
+> // ****************************************************************************
+> // Store settings changes as class variables and in a persistent cookie
+> webcam.changeCombo= function(ele) {
+>   var name= $(ele).attr('name');
+>   webcam[name]= parseInt($(ele).val());
+>   var settings= "videoFrames:"+webcam.videoFrames+","+
+>                 "videoDelay:"+webcam.videoDelay+","+
+>                 "slideDelay:"+webcam.slideDelay+","+
+>                 "imgSize:"+webcam.imgSize+","+
+>                 "fadeDelay:"+webcam.fadeDelay;
+> 
+>   document.cookie= "wcsettings="+settings+"; path=/; expires="+
+>            new Date(new Date().getFullYear()+5,1,1,0,0,0).toGMTString();
+>   webcam.setSize(false);
+> }
+> 
+> // ****************************************************************************
+> // Generic select box for numeric values
+> webcam.comboBox= function(name, begin, end, step, selected, def) {
+>   var ret= "<select style='width:120px' onchange='webcam.changeCombo(this)' "+
+>            "name='"+name+"'>";
+>   for (var val= begin; val<=end; val+= step) {
+>     var sel= "";
+>     if (val == selected) {
+>       sel= " selected";
+>     }
+>     ret+= "<option value='"+val+"'"+sel+">"+val;
+>     if (val == def) {
+>       ret+= " *";
+>     }
+>   }
+>   ret+= "</select>";
+>   return ret;
+> }
+> 
+> // ****************************************************************************
+> // Enumeration select box with textual representaion of index values
+> webcam.comboBoxText= function(name, labels, selected, def) {
+>   var ret= "<select style='width:120px' onchange='webcam.changeCombo(this)' "+
+>            "name='"+name+"'>";
+>   for (var val= 0; val<labels.length; val++) {
+>     var sel= "";
+>     if (val == selected) {
+>       sel= " selected";
+>     }
+>     ret+= "<option value='"+val+"'"+sel+">"+labels[val];
+>     if (val == def) {
+>       ret+= " *";
+>     }
+>   }
+>   ret+= "</select>";
+>   return ret;
+> }
+> 
+> // ****************************************************************************
+> // Show settings page
+> webcam.renderSettings= function() {
+>   var ret= "<table cellspacing=2 cellpadding=2 border=0>";
+>   ret+= "<tr><td colspan=2><h3>Einstellungen zum Webcam-Archiv</h3></td></tr>";
+> 
+>   ret+= "<tr><td>Überblendezeit zwischen zwei Bildern:</td><td>";
+>   ret+= webcam.comboBox("fadeDelay", 0, 1000, 100,
+>                         webcam.fadeDelay, webcam.def.fadeDelay);
+>   ret+= " ms</td></tr>";
+> 
+>   ret+= "<tr><td>Anzahl der Bilder für die Video-Sequenz:</td><td>";
+>   ret+= webcam.comboBox("videoFrames", 10, 500, 10, 
+>                         webcam.videoFrames, webcam.def.videoFrames);
+>   ret+= " Bilder</td></tr>";
+> 
+>   ret+= "<tr><td>Verzögerung zwischen den Video-Bildern:</td><td>";
+>   ret+= webcam.comboBox("videoDelay", 100, 1000, 100,
+>                         webcam.videoDelay, webcam.def.videoDelay);
+>   ret+= " ms</td></tr>";
+> 
+>   ret+= "<tr><td>Wartezeit für Diashow der besten Bilder:</td><td>";
+>   ret+= webcam.comboBox("slideDelay", 1, 20, 1,
+>                         webcam.slideDelay, webcam.def.slideDelay);
+>   ret+= " s</td></tr>";
+> 
+>   ret+= "<tr><td>Größe des dargestellten Bildes:</td><td>";
+>   ret+= webcam.comboBoxText("imgSize", 
+>                         new Array("Automatisch", "Normales Bild", "HD-Bild"),
+>                         webcam.imgSize, webcam.def.imgSize);
+>   ret+= "</td></tr>";
+> 
+>   ret+= "<tr><td colspan=2>&nbsp;</td></tr>";
+>   ret+= "<tr><td><small><b>Hinweise:</b><br>"+
+>         "- Werte mit * sind die empfohlene Grundeinstellung.<br>"+
+>         "- Die Einstellungen bleiben erhalten, wenn Cookies erlaubt sind."+
+>         "</td><td valign='top'>"+
+>         "<input type='button' onclick='webcam.removeSettings();' "+
+>         "value='Auf Grundeinstellung zurücksetzen'></td></tr></table>";
+> 
+>   $("#wcinfo-settings").html(ret);
+> }
+> 
+703c974
+< // Navigationsbox fuer Homepage mit Leben fuellen
+---
+> // Create contents for an additional navigation box (normally on the left)
+715c986
+<   // Wenn Datum schon heute ist, nicht weiterschalten
+---
+>   // if date is today, do not enable switch to the future
+733c1004
+<     "<div style='margin:5px;'>"+
+---
+>     "<div id='left-replacement' style='margin:5px;'>"+
+745,750d1015
+<   if (webcam.data.hugeimg.length>0) {
+<     box+= 
+<       "<a class='menu menu-norm' href='javascript:webcam.openHugeImage()' "+
+<       "title='Bild in voller Größe darstellen'>"+
+<       "Volle Auflösung</a>";
+<   }
+756c1021,1027
+<   $("#left-box").html(box);
+---
+>   var rep= $("#left-replacement");
+>   if (rep.length) {
+>     rep.replaceWith(box); // does not flicker on webkit rather than .html()
+>   }
+>   else {
+>     $("#left-box").html(box);
+>   }
+760c1031
+< // Tastatur-Eingaben bearbeiten
+---
+> // Process keyboard events
+818c1089
+< // Mausrad-Events bearbeiten
+---
+> // Process mouse wheel events
+845c1116
+< // Debugging (wird nur bei Bedarf benutzt)
+---
+> // Debugging (mostly not used)
+857c1128
+< // Alle 10 Minuten (in Minute 1) Bild aktualisieren, falls aktuelles Bild
+---
+> // Reload image if appropriate minute after image-shot has come
+881c1152
+< // Mausrad-Events eines Elements an einen Handler uebergeben
+---
+> // Catch mouse wheel events
+893c1164
+< // Optionen-Menue Klicks bearbeiten
+---
+> // The options menu (below image) has been clicked
+898,916c1169
+<       $("#wcopt-"+opt).addClass("wcoptact");
+<       $("#wcinfo-"+opt).fadeIn(500);
+<       webcam.actopt= opt;
+<       if (opt=="exif" || opt=="bestof") {
+<         webcam.go(webcam.data.image);
+<       }
+<       if (opt == "infos") {
+<         $("#wcinfo-"+opt).load("?infos=1");
+<       }
+<       if (opt == "help") {
+<         $("#wcinfo-"+opt).load("?help=1");
+<       }
+<     }
+<   }
+<   for (var i=0; i<webcam.options.length; i++) {
+<     var opt= webcam.options[i];
+<     if ($(this).attr("id")!="wcopt-"+opt) {
+<       $("#wcopt-"+opt).removeClass("wcoptact");
+<       $("#wcinfo-"+opt).hide();
+---
+>       webcam.go(webcam.data.image+"/"+opt);
+922,924c1175,1176
+< // Bei Aenderung der Bildschirmgroesse ggf. auf HD-Ansicht umschalten
+< // oder zurueck
+< webcam.setSizes= function(width, height, first) {
+---
+> // Honour browser window resize events
+> webcam.setSize= function(first) {
+926c1178,1181
+<   if (width>1400 && height>720) {
+---
+>   var height= $(window).height();
+>   var width= $(window).width();
+> 
+>   if ((width>1400 && height>780 && webcam.imgSize==0) || webcam.imgSize==2) {
+934c1189,1190
+<   else if (width<1370 || height<700) {
+---
+>   else if (((width<1370 || height<760) && webcam.imgSize==0) || 
+>     webcam.imgSize==1) {
+961c1217
+< // Initialisierung nach vollstaendigem Laden der Seite
+---
+> // Initialize when page has load
+962a1219
+>   webcam.readSettings();
+1017c1274
+<   // Navigations-Mausklicks mit Handler versehen
+---
+>   // register mouse events of all navigation fields
+1023c1280
+<   // immer dieselbe Position bei den Minuten ist aktiv
+---
+>   // statically activate actual minute position
+1026,1030c1283
+<   // Bild-Ladehandler registrieren
+<   for (i=0; i<webcam.layers; i++) { 
+<     $(webcam.layerId[i]).load(webcam.onImgLoad);
+<   }
+<   // Ajax-Navigation ueber #-Adressteil respektieren
+---
+>   // honour AJAX-navigation through hash part of URL
+1037c1290,1291
+<   // Tastatur registrieren
+---
+> 
+>   // register keyboard events
+1040c1294
+<   // Mausrad registrieren
+---
+>   // register mouse wheel
+1045c1299
+<   // Zyklisch aktuelles Bild checken, ggf. nachladen
+---
+>   // setup timer for image reload checking
+1048c1302
+<   // Options-Menue mit Leben erfuellen
+---
+>   // register event handlers for options menu
+1051a1306
+>   // align the bestof-icon with actual image size
+1052a1308,1313
+> 
+>   // Determine browser size and handle size changes
+>   $(window).resize(function() {
+>     webcam.setSize(false);
+>   });
+>   webcam.setSize(true);
+1057c1318
+< // Ausgabe zur Initialisierung direkt in das HTML-Dokument
+---
+> // Initialize when page is loading (not yet ready, see above)
+diff -r foto-webcam-1.1/htdocs/webcam/include/webcam.php foto-webcam-1.2/htdocs/webcam/include/webcam.php
+21a22
+>   <td id="wcopt-bestof">Die besten Bilder</td>
+25c26,27
+<   <td id="wcopt-bestof">Die besten Bilder</td>
+---
+>   <td id="wcopt-settings" title="Einstellungen" style="width:20px;">
+>   <img id="wcopt-settings-img" src="$webcamInclude/settings.png"></td>
+46a49,79
+>   $webcamMenu.= '
+>     <div class="wcminilink"></div>
+>     <div class="wcminilink"></div>
+>     <div class="wcminilink"></div>
+>     <div class="wcminilink"></div>
+>     <div class="wcminilink"></div>
+>     <div class="wcminilink"></div>
+>   ';
+> }
+> 
+> if (isset($webcam['extOverview'])) {
+>   $webcamMenu.= 
+>     "<br>Foto-Webcams von anderen Betreibern mit ähnlicher Technik:<br>";
+>   foreach ($webcam['extOverview'] as $cam) {
+>     $name= $cam[0];
+>     $current= $cam[1];
+>     $link= $cam[2];
+>     $title= $cam[3];
+>     $current= preg_replace("#/$#", "", $current);
+>     $webcamMenu.= 
+>       "<a class='wcminilink' target='_blank' href='$link' title='$title'>".
+>       "<img src='$current/180.jpg' class='wcminiimg'></a>\n";
+>   }
+>   $webcamMenu.= '
+>     <div class="wcminilink"></div>
+>     <div class="wcminilink"></div>
+>     <div class="wcminilink"></div>
+>     <div class="wcminilink"></div>
+>     <div class="wcminilink"></div>
+>     <div class="wcminilink"></div>
+>   ';
+50,55d82
+<   <div class="wcminilink"></div>
+<   <div class="wcminilink"></div>
+<   <div class="wcminilink"></div>
+<   <div class="wcminilink"></div>
+<   <div class="wcminilink"></div>
+<   <div class="wcminilink"></div>
+68a96,98
+> <div id="wcinfo-settings" class="wcvgrad wctext" style="display:none">
+>   <img src="$webcamInclude/loading.gif">
+> </div>
+220c250
+<            "src='$webcamInclude/jquery-1.7.1.min.js'></script>";
+---
+>            "src='$webcamInclude/jquery.js'></script>";
+diff -r foto-webcam-1.1/htdocs/webcam/include/wx.php foto-webcam-1.2/htdocs/webcam/include/wx.php
+16a17
+> $camtxt= "";
+36c37,52
+< if ($typ == "ws2350") {
+---
+> elseif ($typ == "usb4all") {
+>   $values= array();
+>   foreach (explode("\n", $wx) as $line) {
+>     $values[]= $line;
+>   }
+>   echo count($values)." values found.\n";
+>   if (count($values)>=2) {
+>     if (is_callable($webcam['wxFunc'])) {
+>       if (! $webcam['wxFunc']($values, $fields, $raw_fields, $camtxt)) {
+>         echo "No valid wx data.\n";
+>         exit;
+>       }
+>     }
+>   }
+> }
+> elseif ($typ == "ws2350") {
+64,71c80,81
+< $keys= array_keys($fields);
+< 
+< # Write values to mysql
+< mysql_connect("localhost", "fotowebcam", "fweu.nix");
+< mysql_select_db("fotowebcam");
+< foreach ($keys as $key) {
+<   mysql_query("insert wx set stamp=now(),day=now(),field='$key',".
+<               "val='{$fields[$key]}',raw_val='{$raw_fields[$key]}'");
+---
+> else {
+>   echo "ERROR: typ unknown: $typ\n";
+73d82
+< mysql_close();
+75,80c84,85
+< # Write values to RRD graph
+< $rrd= "/home/rdh/bin/mkrrd ".$webcam['workPath']."/wetter/wx.rrd";
+< foreach ($keys as $key) {
+<   $rrd.= " $key=".$fields{$key};
+< }
+< system($rrd);
+---
+> if (count($fields)>0) {
+>   $keys= array_keys($fields);
+82,87c87,90
+< # Write camera text
+< $camfile= fopen($webcam['workPath']."/wetter/cam.txt", "w");
+< if ($camfile) {
+<   fwrite($camfile, $camtxt);
+<   fclose($camfile);
+< }
+---
+>   // Open MySQL
+>   mysql_connect($webcam['mysqlHost'], $webcam['mysqlLogin'], 
+>                 $webcam['mysqlPassword']);
+>   mysql_select_db($webcam['mysqlDatabase']);
+89,92c92
+< # Write readable text
+< $txtfile= fopen($webcam['workPath']."/wetter/wx.txt", "w");
+< if ($txtfile) {
+<   $txt= "";
+---
+>   // Write values to mysql
+94c94,122
+<     $txt.= "$key=".$fields{$key}."\n";
+---
+>     mysql_query("insert wx set wc='${webcam['name']}', ".
+>                 "stamp=now(),day=now(),field='$key',".
+>                 "val='{$fields[$key]}',raw_val='{$raw_fields[$key]}'");
+>   }
+>   mysql_close();
+> 
+>   // Write values to RRD graph, if present
+>   if (@is_callable($webcam['rrdFunc'])) {
+>     $webcam['rrdFunc']($fields);
+>   }
+> 
+>   // Write camera text
+>   if ($camtxt != "") {
+>     $camfile= fopen($webcam['workPath']."/wetter/cam.txt", "w");
+>     if ($camfile) {
+>       fwrite($camfile, $camtxt);
+>       fclose($camfile);
+>     }
+>   }
+> 
+>   // Write readable text
+>   $txtfile= fopen($webcam['workPath']."/wetter/wx.txt", "w");
+>   if ($txtfile) {
+>     $txt= "";
+>     foreach ($keys as $key) {
+>       $txt.= "$key=".$fields{$key}."\n";
+>     }
+>     fwrite($txtfile, $txt);
+>     fclose($txtfile);
+96,97d123
+<   fwrite($txtfile, $txt);
+<   fclose($txtfile);
+Only in foto-webcam-1.1/htdocs/webcam: norderney
+Only in foto-webcam-1.2/htdocs/webcam: status
+Only in foto-webcam-1.2/openwrt/usr/bin: usb4all
+diff -r foto-webcam-1.1/openwrt/usr/bin/webcam_capture foto-webcam-1.2/openwrt/usr/bin/webcam_capture
+7d6
+< # This is free software, see COPYING for details.
+36c35,36
+<   echo "$wc_name $now: Capture image..."
+---
+>   uptime=`sed -e 's/\..*//' </proc/uptime`
+>   echo "state=capture uptime=$uptime" | curl -s --form log=@- $wc_curlpar/log.php
+42,44d41
+<   # Heizung wieder auf vorherigen Stand
+<   [ -f /etc/heater.on ] && echo 1 > /proc/diag/led/wlan
+< 
+47a45,47
+>   # Heizung wieder auf vorherigen Stand
+>   [ -f /etc/heater.on ] && echo "1" > /proc/diag/led/wlan
+> 
+50c50
+<   echo "$wc_name $now: Upload image..."
+---
+>   echo "state=upload" | curl -s --form log=@- $wc_curlpar/log.php
+59c59
+<   echo "$wc_name $now: ----- Power off camera -----"
+---
+>   echo "state=error error=reset-camera" | curl -s --form log=@- $wc_curlpar/log.php
+62d61
+<   echo "$wc_name $now: ----- Power on camera -----"
+68c67
+<     echo "$wc_name $now: ----- Reboot host -----"
+---
+>     echo "state=error error=reset-host" | curl -s --form log=@- $wc_curlpar/log.php
+Only in foto-webcam-1.2/openwrt/usr/bin: webcam_capture_generic
+diff -r foto-webcam-1.1/openwrt/usr/bin/webcam_check foto-webcam-1.2/openwrt/usr/bin/webcam_check
+3a4
+> # Invoked by cron every minute:
+4a6,9
+> # If applicable, upload weather data
+> #
+> # Requires the following config in /etc/crontabs/root
+> # * * * * * /usr/bin/webcam_check
+7d11
+< # This is free software, see COPYING for details.
+diff -r foto-webcam-1.1/openwrt/usr/bin/webcam_focus foto-webcam-1.2/openwrt/usr/bin/webcam_focus
+7d6
+< # This is free software, see COPYING for details.
+diff -r foto-webcam-1.1/openwrt/usr/bin/webcam_heater foto-webcam-1.2/openwrt/usr/bin/webcam_heater
+7d6
+< # This is free software, see COPYING for details.
+17,18c16,17
+<   let last=`date +%s -r /tmp/watchdog.ok`/180
+<   if [ "$time" != "$last"] && [ ! -f /tmp/cap_lock ]
+---
+>   let last=0`date +%s -r /tmp/watchdog.ok 2>/dev/null`/180
+>   if [ "$time" != "$last" ] && [ ! -f /tmp/cap_lock ]
+diff -r foto-webcam-1.1/openwrt/usr/bin/webcam_isoexp foto-webcam-1.2/openwrt/usr/bin/webcam_isoexp
+7d6
+< # This is free software, see COPYING for details.
+diff -r foto-webcam-1.1/openwrt/usr/bin/webcam_wait foto-webcam-1.2/openwrt/usr/bin/webcam_wait
+8d7
+< # This is free software, see COPYING for details.
+32c31,32
+<     webcam_heater toggle
+---
+>     /usr/bin/webcam_heater toggle
+>     touch /tmp/wait.ok
+33a34
+>     touch /tmp/wait.error
+diff -r foto-webcam-1.1/openwrt/usr/bin/webcam_wxdata foto-webcam-1.2/openwrt/usr/bin/webcam_wxdata
+11c11,18
+< #
+---
+> 
+> # ---------------------------------------------------
+> # Try usb4all
+> if [ -f /usr/bin/usb4all ]
+> then
+>   usb4all temp | curl --form typ=usb4all -s --form 'wx=<-' $wc_curlpar/wx.php
+>   exit
+> fi
+20c27
+<   hb627 $hbdev | curl -s --form typ=hb627 --form 'wx=<-' $wc_curlpar/wx.php
+---
+>   hb627 $hbdev | curl --form typ=hb627 -s --form 'wx=<-' $wc_curlpar/wx.php
+28,29c35,36
+<   digitemp_DS9097 -q -t 0 -o "temp=%.2C\n" | \
+<     curl -s --form typ=ds1820 --form 'wx=<-' $wc_curlpar/wx.php
+---
+>   digitemp_DS9097 -q -t 0 -o "temp=%.2C\n" |\
+>        curl --form typ=ds1820 -s --form 'wx=<-' $wc_curlpar/wx.php
+42c49
+<   fetch2300 | curl -s --form typ=ws2350 --form 'wx=<-' $wc_curlpar/wx.php
+---
+>   fetch2300 | curl --form typ=ws2350 -s --form 'wx=<-' $wc_curlpar/wx.php

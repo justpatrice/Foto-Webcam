@@ -1,0 +1,83 @@
+<?
+// --------------------------------------------------------------------------
+// Foto-Webcam.eu - Website main menu
+// Global configuration
+//
+// Flori Radlherr, http://www.radlherr.de
+// This is free software, see COPYING for details.
+// --------------------------------------------------------------------------
+
+// Basics
+$navData['includeUri']=    "/include";
+$navData['webcamPath']=    "../webcam";
+$navData['webcamInclude']= "../webcam/include";
+
+// Site names and default description
+if (preg_match("/foto-webcam/i", $navData['host'])) {
+  $navData['suffix']= "Foto-Webcam.eu";
+  $navData['description']= 
+        "Fotokamera als Webcam: ".
+        "Die Webcam-Seite mit der wirklich brauchbaren Bildqualität";
+}
+else {
+  $navData['suffix']= "Flori Radlherr";
+  $navData['description']= 
+        "Private Homepage von Flori Radlherr ".
+        "mit Webcams in hoher Bildqualität und vielen Fotos";
+}
+$navData['author']= "Flori Radlherr, www.radlherr.de, www.foto-webcam.eu";
+
+// The main menu tree
+$navData['menu']= Array();
+$navData['menu'][]= Array(
+  Array("Webcams", "/", true, "Webcam-Übersicht"),
+  Array("-webcams-"), // generate from webcam-overview config
+
+  // These menu items are only shown if referenced by url
+  Array("Kloster Fürstenfeld", "/webcam/kloster-ffb/", false),
+  Array("ESG München", "/webcam/esg-muenchen/", false),
+  Array("Nebelhorn", "/webcam/nebelhorn/", false),
+  Array("Flintsbach", "/webcam/flintsbach/", false),
+  Array("Holzkirchen", "/webcam/holzkirchen/", false),
+  Array("Webcam-Archiv Warngau", "/webcam/warngau", false),
+
+  Array("-separator-"),  
+  Array("Foto-Webcam Wiki", "/wiki/"),
+  Array("-box-"),     // stop for left-box here if applicable
+  Array("Aktuelles (18.08.13)", "/wiki/aktuelles"),
+  Array("Technik-Bilder", "/webcam/bilder/"),
+  Array("Server-Statistik", "/sys/", false),
+  Array("Floris Fotoalbum", "/bilder/", false),
+  Array("Amateurfunk-Bilder", "/c10/", false),
+);
+
+$navData['menu'][]= Array(
+  Array("Partnerseiten", "/", true, "Weitere Betreiber von Foto-Webcams"),
+  Array("Foto-Webcam.com", "http://www.foto-webcam.com/"),
+  Array("Panorama-Blick.at", "http://www.panorama-blick.at/"),
+  Array("Addicted-Sports.com",
+        "http://www.addicted-sports.com/windsurfen/webcam/"),
+  Array("ASAM-live.de", "http://www.asam-live.de/"),
+);
+
+// Submenu-definitions (second para is regexp)
+$navData['afterMenu']= Array();
+$navData['afterMenu'][]= Array("Webalizer", "/sys\/wa\//");
+$navData['afterMenu'][]= Array("Infos zur Webcam", "/webcam.*\/infos\//");
+$navData['afterMenu'][]= Array("Wetterdaten", "/webcam.*\/wetter\//");
+
+// Imprint, left bottom link
+$navData['imprintUri']= "/impressum/";
+$navData['imprintTxt']= "Impressum - Kontakt";
+
+// Timeouts to let webcams become grey or disapper
+$navData['webcamGreyTime']= 1800;
+$navData['webcamHideTime']= 86400*4;
+
+// Create robots=nofollow,noindex meta header for these uris (regexp).
+$navData['nofollowUri']= Array(
+  "/(bilder|c10).*\/(\d\d\d\d)/",
+  "/(db0nj)/"
+);
+
+?>

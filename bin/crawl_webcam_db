@@ -1,0 +1,386 @@
+#!/usr/bin/php
+<?
+// Crawl webcam file system and add triggers to database
+//
+$root= "/home/htdocs";
+$_SERVER['DOCUMENT_ROOT']= $root;
+
+$webcam['name']= "crawl";
+$webcam['title']= "crawl";
+
+require("$root/webcam/include/common.php");
+
+$mysqli= openMysql() or die("Cannot open MySQL db");
+
+$lastDay= "";
+$webcam['overview']= Array();
+
+if (! isset($argv[1])) {
+  print("\nUsage: $argv[0] <cam-name> [ <cam-names> ... ]\n\n");
+  exit;
+}
+while (isset($argv[1])) {
+  $webcam['overview'][]= Array($argv[1]);
+  array_shift($argv);
+}
+
+foreach ($webcam['overview'] as $cam) {
+  $name= $cam[0];
+
+  print("delete bestof '$name'");
+  $mysqli->query("delete from webcam_bestof where cam='$name'");
+  camscan($name, $root, true);
+}
+foreach ($webcam['overview'] as $cam) {
+  $name= $cam[0];
+
+  print("delete all '$name'");
+  $mysqli->query("delete from webcam_day where cam='$name'");
+  $mysqli->query("delete from webcam_image where cam='$name'");
+  print("Scan $name...\n");
+  camscan($name, $root, false);
+}
+
+function camscan($cam, $root, $bestof=false) {
+  $workdir= "$root/webcam/$cam";
+  if ($bestof) {
+    $workdir.= "/bestof";
+  }
+  if (chdir($workdir)) {
+    $bestWhen= Array();
+    $bestIp= Array();
+    if ($bestof) {
+      $fi= @fopen("add.log", "rt");
+      if ($fi) {
+        while (! feof($fi)) {
+          $line= fgets($fi);
+          $rr= Array();
+          if (preg_match(
+            "/^(\d\d).(\d\d).(\d\d) ([\d:]+);([\d\.]+);.*?\/+([\d\/]+)(_.*|)$/",
+            $line, $rr)) {
+
+            $path= $rr[6];
+            $bestWhen[$path]= "20$rr[3]-$rr[2]-$rr[1] $rr[4]";
+            $bestIp[$path]= $rr[5];
+          }
+        }
+        fclose($fi);
+      }
+    }
+
+    // Scan file system directories around the current time stamp
+    $years= array(); $months= array(); $days= array(); $hours= array();
+    $year=  dirscan("", ".",                 "[0-9]{4}",        $years);
+    $month= dirscan("", "$year",             "[0-9]{2}",        $months);
+    $day=   dirscan("", "$year/$month",      "[0-9]{2}",        $days);
+    $hour=  dirscan("", "$year/$month/$day", "[0-9]{4}_la.jpg", $hours);
+
+    $lastImg= "$year/$month/$day/$hour";
+    $imgs= 0;
+
+    store($cam, $lastImg, $bestof, $bestWhen, $bestIp);
+    do {
+      $back= traverse($lastImg, -200, 0);
+      foreach ($back as $img) {
+        if (store($cam, $img, $bestof, $bestWhen, $bestIp)) {
+          return;
+        }
+        $lastImg= $img;
+      }
+      $imgs= count($back);
+    }
+    while ($imgs>0);
+  }
+  else {
+    print("WARNING: cannot change to $workdir\n");
+  }
+}
+
+// --------------------------------------------------------------------------
+function store($cam, $img, $bestof, $bestWhen, $bestIp) {
+  global $lastDay;
+  global $mysqli;
+
+  $img= preg_replace("/_.*$/", "", $img);
+  $ex= @file_get_contents($img."_ex.txt");
+  $exl= strlen($ex);
+  $ex= $mysqli->escape_string($ex);
+
+  if (!preg_match("/^\d\d\d\d\/\d\d\/\d\d\/\d\d\d\d$/", $img)) {
+    return false;
+  }
+  if ($bestof) {
+    $res= $mysqli->query("select path from webcam_bestof ".
+                      "where cam='$cam' and path='$img'");
+    if ($res->num_rows > 0) {
+      return true;
+    }
+  }
+  else {
+    $res= $mysqli->query("select path from webcam_image ".
+                      "where cam='$cam' and path='$img'");
+    if ($res->num_rows > 0) {
+      return true;
+    }
+  }
+  $hu= file_exists($img."_hu.jpg");
+  $lm= file_exists($img."_lm.jpg");
+
+  $set= "set cam='$cam', path='$img', ";
+  if ($exl>0) {
+    $mysqli->query("replace webcam_exif $set exif='$ex'");
+  }
+  $mysqli->query("replace webcam_image $set have_lm='$lm',".
+              "have_hu='$hu', have_ex='$exl'");
+
+  print("$cam/$img $exl\n");
+
+  $day= preg_replace("/.\d\d\d\d$/", "", $img);
+  if ($lastDay != $day) {
+    $lastDay= $day;
+    $mysqli->query("replace webcam_day set cam='$cam', path='$day'"); //yyyy/mm/dd
+    $day= preg_replace("/.\d\d$/", "", $day);
+    $mysqli->query("replace webcam_day set cam='$cam', path='$day'"); //yyyy/mm
+    $day= preg_replace("/.\d\d$/", "", $day);
+    $mysqli->query("replace webcam_day set cam='$cam', path='$day'"); //yyyy
+  }
+  @$bestWhen[$img].= "";
+  @$bestIp[$img].= "";
+
+  if ($bestof) {
+    $mysqli->query("replace webcam_bestof $set added='{$bestWhen[$img]}',".
+                "add_ip='{$bestIp[$img]}'");
+  }
+  return false;
+}
+
+// --------------------------------------------------------------------------
+// Read one level of the file system and scan for available images/folders
+function dirscan($want, $path, $regex, &$arr) {
+  $dh= opendir($path);
+  if ($dh) {
+    while (($file= readdir($dh)) !== false) {
+      if (preg_match("/$regex/", $file)) {
+        $arr[]= $file;
+      }
+    }
+    closedir($dh);
+    sort($arr);
+
+    if (count($arr)==0) {
+      return $want;
+    }
+    $last= $arr[count($arr)-1];
+
+    if ($want=="" || $want>$last) {
+      return $last;
+    }
+    if ($want<$arr[0]) {
+      return $arr[0];
+    }
+
+    foreach ($arr as $v) {
+      if ($v>=$want) {
+        return $v;
+      }
+    }
+  }
+  return "";
+}
+
+// --------------------------------------------------------------------------
+// Traverse a particular number of available images forward or back
+function traverse($act, $number, $sameHour) {
+  global $mysqli;
+  $ret= array();
+  $count= 0;
+  $dayModified= false;
+  $reverse= false;
+  if ($number<0) {
+    $reverse= true;
+    $number= abs($number);
+  }
+  if ($number>500) {
+    $number= 500;
+  }
+
+  $rr= array();
+  preg_match("/(\d{4})\/(\d{2})\/(\d{2})\/(\d{4})/", $act, $rr);
+  if (count($rr)==5) {
+    $year= $rr[1]; 
+    $mon=  $rr[2]; 
+    $day=  $rr[3]; 
+    $hour= (int)$rr[4];
+
+    while ($number>0) {
+      $dh= @opendir(sprintf("%02d/%02d/%02d", $year, $mon, $day));
+      if ($dh) {
+        $hours= array();
+        while (($file= readdir($dh)) !== false) {
+          if (preg_match("/^\d{4}_la.jpg$/", $file)) {
+            $hours[]= $file;
+          }
+        }
+        closedir($dh);
+        sort($hours);
+        if ($reverse) {
+          $hours= array_reverse($hours);
+        }
+
+        foreach ($hours as $h) {
+          if ($sameHour) {
+            if ($dayModified && ((int)$h == $hour)) {
+              $ret[]= sprintf("%02d/%02d/%02d/%s",$year,$mon,$day,$h);
+              $number--;
+              if ($number==0) {
+                break;
+              }
+            }
+          }
+          elseif ($dayModified || ($reverse?((int)$h<$hour):((int)$h>$hour))) {
+            $ret[]= sprintf("%02d/%02d/%02d/%s",$year,$mon,$day,$h);
+            $number--;
+            if ($number==0) {
+              break;
+            }
+          }
+        }
+      }
+      if ($reverse) {
+        $day--; if ($day==0) {
+          $day=31; $mon--; if ($mon==0) {
+            $mon=12; $year--;
+          }
+        }
+      }
+      else {
+        $day++; if ($day>31) {
+          $day=1; $mon++; if ($mon>12) {
+            $mon=1; $year++;
+          }
+        }
+      }
+      $dayModified= true;
+      if ($year<1998) {
+        break;
+      }
+      if (($count++)>500) {
+        break;
+      }
+    }
+  }
+  return $ret;
+}
+
+// --------------------------------------------------------------------------
+// Read EXIF meta data file stored with the image
+function getExif($when) {
+  global $webcam;
+  $when= preg_replace("/_.*/", "", $when);
+  $rr= array();
+  $exDate= "?"; $exModel= ""; $exTime= ""; $exFnum= ""; $exIso= ""; 
+  $exBias= ""; $exLen= ""; $exLum= ""; $exLens= ""; $exMeas= null;
+  if (preg_match("#(\d+)/(\d+)/(\d+)/(\d\d)(\d\d)#", $when, $rr)) {
+    $exDate= "$rr[3].$rr[2].$rr[1] $rr[4]:$rr[5]";
+  }
+  $fh= @fopen($when."_ex.txt", "r");
+  if ($fh) {
+    while (! feof($fh)) {
+      $line= fgets($fh);
+      if (preg_match("/^(.*?) *\|(.*?)\s*$/", $line, $rr)) {
+        $key= $rr[1];
+        $val= $rr[2];
+        if (preg_match("/^Model/i", $key)) {
+          if (preg_match("/^C[0-9]/", $val)) {
+            $val= "Olympus $val";
+          }
+          $exModel= $val;
+        }
+        if (preg_match("/^(Belichtungsz|Exposure Time)/i", $key)) {
+          $exTime= $val;
+        }
+        if (preg_match("/^(F Num|FNum)/i", $key)) {
+          $exFnum= $val;
+        }
+        if (preg_match("/^ISO/i", $key)) {
+          $exIso= $val;
+        }
+        if (preg_match("/^(Exposure Bias|Belichtungsabw)/i", $key)) {
+          $exBias= $val;
+        }
+        if (preg_match("/^(Brennweite|Focal Len)/i", $key)) {
+          $exLen= $val;
+        }
+        if (preg_match("/^(Lens Name)/i", $key) && $val) {
+          $exLen.= " &nbsp; ($val)";
+        }
+        if (preg_match("/^(Luminance)/i", $key)) {
+          $exLum= $val;
+        }
+        if (preg_match("/^(MeasuredEV)/i", $key) && $val) {
+          $exMeas= $val;
+        }
+      }
+    }
+    fclose($fh);
+    if ($exLum && $exMeas) {
+      $exLum.= " &nbsp; ($exMeas)";
+    }
+    if ($webcam['lang']=="de") {
+      return "<table>".
+        "<tr><td>Aufnahmezeit</td><td>$exDate</td></tr>".
+        "<tr><td>Kameramodell</td><td>$exModel</td></tr>".
+        "<tr><td>Brennweite</td><td>$exLen</td></tr>".
+        "<tr><td>Belichtungszeit</td><td>$exTime</td></tr>".
+        "<tr><td>Blende</td><td>$exFnum</td></tr>".
+        "<tr><td>ISO-Empfindlichkeit</td><td>$exIso</td></tr>".
+        "<tr><td>Belichtungskorrektur</td><td>$exBias</td></tr>".
+        "<tr><td>Bildhelligkeit</td><td>$exLum</td></tr>".
+        "</table>";
+    }
+    else {
+      return "<table>".
+        "<tr><td>Capture time</td><td>$exDate</td></tr>".
+        "<tr><td>Camera model</td><td>$exModel</td></tr>".
+        "<tr><td>Focal length</td><td>$exLen</td></tr>".
+        "<tr><td>Exposure time</td><td>$exTime</td></tr>".
+        "<tr><td>Aperture</td><td>$exFnum</td></tr>".
+        "<tr><td>ISO speed</td><td>$exIso</td></tr>".
+        "<tr><td>Exposure compensation</td><td>$exBias</td></tr>".
+        "<tr><td>Luminance</td><td>$exLum</td></tr>".
+        "</table>";
+    }
+  }
+  else {
+    return "Keine EXIF-Informationen zu diesem Zeitpunkt gefunden.";
+  }
+}
+
+// --------------------------------------------------------------------------
+// Read "Best-Of"-list. Traverses filesystem recursive.
+function bestofList($path, &$bestof) {
+  $dh= opendir($path);
+  if ($dh) {
+    $dir= array();
+    while (($file= readdir($dh)) !== false) {
+      array_push($dir, $file);
+    }
+    closedir($dh);
+    sort($dir);
+    foreach ($dir as $ele) {
+      if ($ele[0] != ".") {
+        $p= "$path/$ele";
+
+        $rr= array();
+        if (preg_match("/(\d{4}\/\d{2}\/\d{2}\/\d{4})_sm.jpg/", $p, $rr)) {
+          array_push($bestof, $rr[1]);
+        }
+        elseif (is_dir($p)) {
+          bestofList($p, $bestof);
+        }
+      }
+    }
+  }
+}
+
+?>

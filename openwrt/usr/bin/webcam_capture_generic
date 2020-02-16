@@ -1,0 +1,41 @@
+#!/bin/sh
+# ---------------------------------------------------
+# Foto-Webcam.eu
+# Capture image with generic gphoto2 camera
+#
+# Flori Radlherr, www.radlherr.de
+# ---------------------------------------------------
+#
+. /etc/webcam.cfg
+#
+cd /tmp
+now=$1
+
+# Prozedur: Ein Foto aufnehmen. 
+do_capture () {
+  rm -f *.jpg 2>/dev/null
+
+  echo "$wc_name $now: Capture image..."
+  if gphoto2 --capture-image-and-download 2>&1
+  then
+    mv *.jpg raw.jpg || return 1
+
+    echo "$wc_name $now: Upload image..."
+    curl -sw '\n%{time_total}s %{size_upload}Bytes %{speed_upload}Bytes/s\n' \
+       --form upload=@raw.jpg --form now=$now $wc_curlpar/upload.php
+    return 0
+  fi
+  return 1
+}
+
+# Bild machen
+if ! do_capture
+then
+  sleep 15
+  # Wenns nochmal nix war, Rechner neu starten
+  if ! do_capture
+  then
+    echo "$wc_name $now: ----- Reboot host -----"
+    /sbin/reboot
+  fi
+fi
